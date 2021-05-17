@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">FindCallers</string>
+    <string name="company">Softgyan</string>
+    <string name="search_number">SearchNumber</string>
+    <string name="block_number">Block and Spam Numbers</string>
+    <string name="search_important_number">Search Important number</string>
+    <string name="favorite_number">Favorite Numbers</string>
+    <string name="find_mobile">Find Mobile</string>
+    <string name="setting">Setting</string>
+    <string name="log_out">Logout</string>
+    <string name="start">Start</string>
+    <string name="close">Close</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="phone">Phone</string>
+    <string name="contact">Contacts</string>
+    <string name="backup_and_restore">Backup and Restore</string>
+</resources>
