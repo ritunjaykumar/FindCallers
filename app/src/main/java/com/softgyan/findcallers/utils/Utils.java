@@ -4,22 +4,35 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.telephony.SubscriptionInfo;
-import android.telephony.SubscriptionManager;
+import android.database.Cursor;
+import android.graphics.PixelFormat;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.ContactsContract;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
-import com.softgyan.findcallers.models.SimCardInfoModel;
-import com.softgyan.findcallers.utils.exception.InvalidException;
+import com.softgyan.findcallers.hardware.CallHardware;
+import com.softgyan.findcallers.models.CallerInfoModel;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,6 +94,10 @@ public final class Utils {
         toast.show();
     }
 
+    public static void toastMessage(Context context, @NonNull String message) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+
     public static boolean hasPermissions(Context context, String... permissions) {
         if (context != null && permissions != null) {
             for (String permission : permissions) {
@@ -112,19 +129,6 @@ public final class Utils {
         context.startActivity(intent);
     }
 
-    public static List<SubscriptionInfo> getSimCardInfo(Context context) throws InvalidException {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
-                PackageManager.PERMISSION_GRANTED) {
-            final SubscriptionManager subscriptionManager =
-                    (SubscriptionManager) context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
-
-            return subscriptionManager.getActiveSubscriptionInfoList();
-        }
-        throw new InvalidException("Permission Not Granted -> Manifest.permission.READ_PHONE_STATE");
-
-    }
-
-
     public static Date stringToDate(String aDate) {
 
         if (aDate == null) return null;
@@ -135,19 +139,9 @@ public final class Utils {
 
     }
 
-    public static int getSubscriptionId(final Context context, @NonNull final String iccId) {
-        SimCardInfoModel.getSimInfoS(context);
-        for (SimCardInfoModel simInfo : SimCardInfoModel.simCardInfoList) {
-            if (iccId.equals(simInfo.getIccId())) {
-                return simInfo.getSubscriptionId();
-            }
-        }
-        return -1;
-    }
 
     public static int getCallTypeIcon(final int callTypeCode) {
         switch (callTypeCode) {
-
             case CommVar.INCOMING_TYPE:
             case CommVar.REJECTED_TYPE:
                 return R.drawable.ic_in_coming;
@@ -159,8 +153,11 @@ public final class Utils {
                 return R.drawable.ic_block;
             default:
                 return -1;
-
         }
+    }
+
+    public static boolean isNull(Object object) {
+        return object == null;
     }
 
     public static int getPlaceHolderCount(final String selection) {
@@ -179,4 +176,91 @@ public final class Utils {
         }
         return count;
     }
+
+    /**
+     * @param context         can't be null
+     * @param callerInfoModel only user info to show
+     */
+    public static void showDialogOverCall(final Context context, CallerInfoModel callerInfoModel) {
+        /*checking permission for showing dialog*/
+        if (requestOverlayPermission(context)) return;
+        Log.d(TAG, "showDialogOverCall: caller info details : "+callerInfoModel);
+        WindowManager windowManager;
+        WindowManager.LayoutParams params;
+        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        int flags;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            flags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            flags = WindowManager.LayoutParams.TYPE_PHONE;
+        }
+        int layoutParams = flags;
+
+        View view = layoutInflater.inflate(R.layout.layout_caller_info, null);
+
+        int wmFlag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
+
+        params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                layoutParams,
+                wmFlag,
+                PixelFormat.TRANSLUCENT
+        );
+        view.findViewById(R.id.ibClose).setOnClickListener(v -> {
+            windowManager.removeView(view);
+
+        });
+        view.findViewById(R.id.tvCall).setOnClickListener(v -> {
+            CallHardware.makeCall(context, callerInfoModel.getNumber());
+
+        });
+        TextView tvName = view.findViewById(R.id.tvName);
+        if (!isNull(callerInfoModel.getName())) {
+            tvName.setText(callerInfoModel.getName());
+        } else {
+            tvName.setText("unknown Caller");
+        }
+        if(!isNull(callerInfoModel.getProfileUri())) {
+            ImageView ivProfile = view.findViewById(R.id.sivProfile);
+            Glide.with(context).load(callerInfoModel.getProfileUri()).into(ivProfile);
+        }
+
+        TextView tvNumber = view.findViewById(R.id.tvNumber);
+        tvNumber.setText(callerInfoModel.getNumber());
+        windowManager.addView(view, params);
+    }
+
+    public synchronized static List<HashMap<String, Object>> getAllContactForBackup(Context context) {
+        if (context == null) return null;
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(context, "Read and write contacts permission is denied", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+        final List<HashMap<String, Object>> backupContactList = new ArrayList<>();
+        final Uri CONTACT_BASE_URI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+        Cursor cursor = context.getContentResolver().query(CONTACT_BASE_URI, null, null, null, null);
+
+        final String[] columnNames = cursor.getColumnNames();
+        while (cursor.moveToNext()) {
+            HashMap<String, Object> mapContact = new HashMap<>();
+            for (String columnName : columnNames) {
+                mapContact.put(columnName, cursor.getColumnIndex(columnName));
+            }
+            backupContactList.add(mapContact);
+
+        }
+        cursor.close();
+        return backupContactList;
+    }
+
+
+    public static boolean requestOverlayPermission(Context context) {
+        return !Settings.canDrawOverlays(context);
+    }
+
+
 }

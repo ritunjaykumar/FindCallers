@@ -20,6 +20,7 @@ import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallNumberModel;
+import com.softgyan.findcallers.utils.CallUtils;
 import com.softgyan.findcallers.utils.Utils;
 
 import java.util.ArrayList;
@@ -87,7 +88,7 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
             }
         }
 
-        final int subscriptionId = Utils.getSubscriptionId(mContext, callNumber.getIccId());
+        final int subscriptionId = CallUtils.getSubscriptionId(mContext, callNumber.getIccId());
         switch (subscriptionId) {
             case CommVar.SIM_ONE: {
                 holder.ivSimId.setImageResource(R.drawable.sim_1);

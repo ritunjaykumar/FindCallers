@@ -14,7 +14,7 @@ import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.models.SimCardInfoModel;
-import com.softgyan.findcallers.preferences.SettingPreference;
+import com.softgyan.findcallers.preferences.AppPreference;
 
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class App extends Application {
     /*get all local contacts*/
 
     private void getContacts() {
-        if (SettingPreference.isWelcomeActivitySet(this)) {
+        if (AppPreference.isWelcomeActivitySet(this)) {
             if (CommVar.contactsList.size() == 0) {
                 ContactLoad contactLoad = new ContactLoad(this);
                 contactLoad.execute();

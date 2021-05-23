@@ -1,7 +1,9 @@
 package com.softgyan.findcallers.widgets.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -19,6 +21,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
+import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.adapter.FragmentAdapter;
 import com.softgyan.findcallers.widgets.fragment.CallFragment;
 import com.softgyan.findcallers.widgets.fragment.ContactFragment;
@@ -26,6 +29,7 @@ import com.softgyan.findcallers.widgets.fragment.ContactFragment;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
+    private static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 1407;
     private DrawerLayout mDrawerLayout;
     private ViewPager viewPager;
     private FragmentAdapter fragmentAdapter;
@@ -39,12 +43,20 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
 
-        Log.d(TAG, "onCreate: call list size : "+ CommVar.callList.size());
-        Log.d(TAG, "onCreate: contact list size : "+ CommVar.contactsList.size());
+        if (Utils.requestOverlayPermission(this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE);
+        }
+
+
+        Log.d(TAG, "onCreate: call list size : " + CommVar.callList.size());
+        Log.d(TAG, "onCreate: contact list size : " + CommVar.contactsList.size());
         initNavigation(toolbar);
         init();
         setUpFragmentAdapter();
     }
+
     @Override
     public void onBackPressed() {
         if (mPosition != 0) {
@@ -54,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
 
         super.onBackPressed();
     }
+
     private void initNavigation(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.mainDrawer);
         NavigationView mNavigationView = findViewById(R.id.main_side_navigation_view);
@@ -85,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
             intent = new Intent(this, SearchNumberActivity.class);
         } else if (itemId == R.id.navBlockNumberList) {
             intent = new Intent(this, BlockNumberActivity.class);
+        } else if (itemId == R.id.navBackupRestore) {
+            intent = new Intent(this, BackupAndRestoreActivity.class);
         } else {
             return;
         }
@@ -125,4 +140,13 @@ public class MainActivity extends AppCompatActivity {
             //blank method
         }
     };
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
+            if (!Utils.requestOverlayPermission(this)) {
+                finish();
+            }
+        }
+    }
 }

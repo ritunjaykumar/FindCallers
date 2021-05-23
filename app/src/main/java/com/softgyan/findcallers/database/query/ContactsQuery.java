@@ -78,7 +78,7 @@ public class ContactsQuery {
         }
         final int insertResult = insertContacts(context, contentValues);
         if (insertResult == CommVar.FAILED) {
-            Log.d(TAG, "insertContactsDetails: Failed to save");
+//            Log.d(TAG, "insertContactsDetails: Failed to save");
             return CommVar.FAILED;
         }
         contactModel.setId(insertResult);
@@ -102,7 +102,7 @@ public class ContactsQuery {
                 continue;
             }
             contactNumberModel.setNumberId(insertMobileNumberResult);
-            Log.d(TAG, "insertContactsDetails: saved data : " + contactModel.toString());
+//            Log.d(TAG, "insertContactsDetails: saved data : " + contactModel.toString());
 
         }
 
@@ -111,7 +111,7 @@ public class ContactsQuery {
     }
 
     public synchronized static List<ContactModel> getContactModels(@NonNull Context context) {
-        Log.d(TAG, "getContactModels: getting from local database");
+//        Log.d(TAG, "getContactModels: getting from local database");
         final List<ContactModel> contactList = new ArrayList<>();
         final Cursor contactQuery = context.getContentResolver().query(ContactsDetails.CONTENT_USER_URI,
                 null, null,
@@ -161,9 +161,9 @@ public class ContactsQuery {
         ContactModel model = getCursorFromContactModel(searchQuery);
         model.setContactNumbers(numberModel);
 
-        ContactModel cModel = new ContactModel("dfds");
+
         searchQuery.close();
-        return cModel;
+        return model;
     }
 
 

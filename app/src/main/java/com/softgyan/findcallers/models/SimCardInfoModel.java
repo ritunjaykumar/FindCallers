@@ -7,7 +7,7 @@ import android.telephony.SubscriptionInfo;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.softgyan.findcallers.utils.Utils;
+import com.softgyan.findcallers.utils.CallUtils;
 import com.softgyan.findcallers.utils.exception.InvalidException;
 
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class SimCardInfoModel implements Serializable {
-    public final static List<SimCardInfoModel> simCardInfoList = new ArrayList<>();
+    private final static List<SimCardInfoModel> simCardInfoList = new ArrayList<>();
     private final int subscriptionId;
     private final String mobileNumber;
     private final String displayName;
@@ -92,12 +92,12 @@ public final class SimCardInfoModel implements Serializable {
     }
 
 
-    public static void getSimInfoS(final Context context) {
+    public static List<SimCardInfoModel> getSimInfoS(final Context context) {
         if (simCardInfoList.size() != 0) {
-            return;
+            return simCardInfoList;
         }
         try {
-            final List<SubscriptionInfo> simCardInfoS = Utils.getSimCardInfo(context);
+            final List<SubscriptionInfo> simCardInfoS = CallUtils.getSimCardInfo(context);
             for (SubscriptionInfo si : simCardInfoS) {
                 final SimCardInfoModel sci;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -117,7 +117,10 @@ public final class SimCardInfoModel implements Serializable {
 
         } catch (InvalidException e) {
             e.printStackTrace();
+            return null;
         }
+        return simCardInfoList;
     }
+
 
 }

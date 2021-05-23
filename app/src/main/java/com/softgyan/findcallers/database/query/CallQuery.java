@@ -96,15 +96,15 @@ public final class CallQuery {
         final int insertResult = (int) ContentUris.parseId(insertUri);
         if (insertResult > -1) {
             callModel.setNameId(insertResult);
-            Log.d(TAG, "insertCallLog: call Name table : inserted");
+//            Log.d(TAG, "insertCallLog: call Name table : inserted");
             for (final CallNumberModel numberModel : callModel.getCallNumberList()) {
                 numberModel.setNameRefId(insertResult);
                 final int callResult = insertCallNumberLog(context, numberModel);
                 if (callResult > -1) {
                     numberModel.setCallModelId(callResult);
-                    Log.d(TAG, "insertCacheName: inserted : " + numberModel);
+//                    Log.d(TAG, "insertCacheName: inserted : " + numberModel);
                 } else {
-                    Log.d(TAG, "insertCacheName: not inserted : " + numberModel);
+//                    Log.d(TAG, "insertCacheName: not inserted : " + numberModel);
                 }
             }
         }

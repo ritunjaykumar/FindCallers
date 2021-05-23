@@ -20,7 +20,7 @@ import com.softgyan.findcallers.database.query.CallQuery;
 import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
-import com.softgyan.findcallers.preferences.SettingPreference;
+import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
@@ -247,7 +247,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     private static void openMainActivity(Context context) {
         if (callFlag && contactFlag) {
-            SettingPreference.setWelcomeActivity(context, true);
+            AppPreference.setWelcomeActivity(context, true);
             Utils.openActivity(context, MainActivity.class, true);
         }
     }

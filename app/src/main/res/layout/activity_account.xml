@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    tools:context=".widgets.activity.AccountActivity">
+
+    <include layout="@layout/custom_tool_bar" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/appBar"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="8dp"
+            android:contentDescription="imageView"
+            app:srcCompat="@mipmap/find_caller"
+            tools:ignore="HardcodedText" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:contentPadding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/etNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_edit_text"
+                    android:backgroundTint="@color/accent"
+                    android:drawableStart="@drawable/ic_phone"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="@color/accent"
+                    android:hint="phone number"
+                    android:inputType="numberDecimal"
+                    android:lines="1"
+                    android:maxLength="10"
+                    android:textColor="@color/accent"
+                    android:textColorHint="@color/accentLight"
+                    android:textSize="18sp"
+                    tools:ignore="HardcodedText" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:text="don't include country code(only for Hindustan)"
+                    tools:ignore="HardcodedText" />
+
+                <EditText
+                    android:id="@+id/etOtp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="12dp"
+                    android:visibility="gone"
+                    android:background="@drawable/bg_edit_text"
+                    android:backgroundTint="@color/colorGreen"
+                    android:drawableStart="@drawable/ic_call"
+                    android:drawablePadding="4dp"
+                    android:drawableTint="@color/colorGreen"
+                    android:hint="otp"
+                    android:lines="1"
+                    android:maxLength="6"
+                    android:inputType="numberDecimal"
+                    android:textColor="@color/colorGreen"
+                    android:textColorHint="@color/greenLight"
+                    tools:ignore="HardcodedText" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:layout_margin="12dp">
+
+                    <Button
+                        android:id="@+id/btnClearNumber"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:elevation="2dp"
+                        android:text="Clear"
+                        android:textAllCaps="false"
+                        tools:ignore="HardcodedText" />
+                    <Button
+                        android:id="@+id/btnClearOtp"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:elevation="2dp"
+                        android:visibility="gone"
+                        android:layout_marginStart="12dp"
+                        android:text="Clear"
+                        android:textAllCaps="false"
+                        tools:ignore="HardcodedText" />
+
+                    <Button
+                        android:id="@+id/btnReset"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:elevation="2dp"
+                        android:visibility="gone"
+                        android:text="Reset"
+                        android:textAllCaps="false"
+                        tools:ignore="HardcodedText" />
+                </LinearLayout>
+            </LinearLayout>
+
+
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+        <Button
+            android:id="@+id/btnVerifyOtp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/circular_background"
+            android:backgroundTint="@color/accent"
+            android:includeFontPadding="false"
+            android:padding="4dp"
+            android:visibility="gone"
+            android:text="Verify Otp"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            tools:ignore="HardCodedText" />
+        <Button
+            android:id="@+id/btnSendOtp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/circular_background"
+            android:backgroundTint="@color/accent"
+            android:includeFontPadding="false"
+            android:padding="4dp"
+            android:text="Send Otp"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            tools:ignore="HardCodedText" />
+    </FrameLayout>
+
+
+</RelativeLayout>

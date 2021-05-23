@@ -1,6 +1,5 @@
 package com.softgyan.findcallers.temp;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -15,7 +14,7 @@ public class TempCallActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_temp);
+        setContentView(R.layout.layout_caller_info);
     }
 
 

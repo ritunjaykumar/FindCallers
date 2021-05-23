@@ -6,7 +6,9 @@
     <color name="colorSecondaryDark">#D32F2F</color>
     <color name="primary_light">#FFCCBC</color>
     <color name="accent">#448AFF</color>
+    <color name="accentLight">#80448AFF</color>
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
-    <color name="colorGreen">#309F00</color>
+    <color name="colorGreen">#4AEF02</color>
+    <color name="greenLight">#804AEF02</color>
 </resources>
