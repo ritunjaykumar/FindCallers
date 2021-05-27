@@ -8,7 +8,7 @@ import android.util.Log;
 
 import java.util.Date;
 
-public abstract class CallStateReceiverTemp extends BroadcastReceiver {
+public abstract class CallStateReceiver extends BroadcastReceiver {
     private static final String TAG = "CallStateReceiverTemp";
     private static int lastState = TelephonyManager.CALL_STATE_IDLE;
     private static final String OUT_GOING_CALL_ACTION = "android.intent.action.NEW_OUTGOING_CALL";

@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.models.ContactNumberModel;
+import com.softgyan.findcallers.models.UploadContactModel;
 import com.softgyan.findcallers.utils.Utils;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public final class SystemContacts {
     private static final String PHOTO_URI = ContactsContract.CommonDataKinds.Photo.PHOTO_URI;
 
     private final static List<ContactModel> contactsList = new ArrayList<>();
+    public final static List<UploadContactModel> uploadContactList = new ArrayList<>();
 
     private static void getContactsList(final Context context) {
 
@@ -52,6 +54,16 @@ public final class SystemContacts {
             String number = Utils.trimNumber(people.getString(indexNumber));
             int id = people.getInt(indexId);
             final String imageUri = people.getString(indexPhoto);
+
+            // for upload contact on server =>start
+            UploadContactModel uploadContactModel = new UploadContactModel(
+                    null, number, null, null, name, false
+            );
+
+            uploadContactList.add(uploadContactModel);
+
+            //=> end
+
 
             //adding contacts to main list
 
@@ -80,8 +92,8 @@ public final class SystemContacts {
 
     }
 
-    public static List<ContactModel> getSystemContactsList(Context context){
-        if(contactsList.size() == 0){
+    public static List<ContactModel> getSystemContactsList(Context context) {
+        if (contactsList.size() == 0) {
             getContactsList(context);
         }
         return contactsList;

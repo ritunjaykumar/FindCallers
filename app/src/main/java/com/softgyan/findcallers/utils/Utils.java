@@ -1,11 +1,14 @@
 package com.softgyan.findcallers.utils;
 
 import android.Manifest;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.PixelFormat;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.ContactsContract;
@@ -14,7 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,10 +26,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
+import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.hardware.CallHardware;
 import com.softgyan.findcallers.models.CallerInfoModel;
+import com.softgyan.findcallers.models.ContactModel;
+import com.softgyan.findcallers.models.ContactNumberModel;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -181,10 +188,17 @@ public final class Utils {
      * @param context         can't be null
      * @param callerInfoModel only user info to show
      */
-    public static void showDialogOverCall(final Context context, CallerInfoModel callerInfoModel) {
+
+    public static void showDialogOverCall(final Context context, CallerInfoModel callerInfoModel,
+                                          boolean isViewUpdate) {
+        //todo isViewUpdate
         /*checking permission for showing dialog*/
+
+        Log.d(TAG, "showDialogOverCall: isViewUpdate : " + isViewUpdate);
+
         if (requestOverlayPermission(context)) return;
-        Log.d(TAG, "showDialogOverCall: caller info details : "+callerInfoModel);
+        if (callerInfoModel == null) return;
+        Log.d(TAG, "showDialogOverCall: caller info details : " + callerInfoModel);
         WindowManager windowManager;
         WindowManager.LayoutParams params;
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
@@ -196,6 +210,7 @@ public final class Utils {
             flags = WindowManager.LayoutParams.TYPE_PHONE;
         }
         int layoutParams = flags;
+
 
         View view = layoutInflater.inflate(R.layout.layout_caller_info, null);
 
@@ -209,6 +224,19 @@ public final class Utils {
                 wmFlag,
                 PixelFormat.TRANSLUCENT
         );
+
+        if (isViewUpdate) {
+            LinearLayout linearLayout = view.findViewById(R.id.llOptionContainer);
+            showViews(linearLayout);
+        }
+
+        if (!isNull(callerInfoModel.getMessage())) {
+            TextView tvMessage = view.findViewById(R.id.tvNotification);
+            tvMessage.setText(callerInfoModel.getMessage());
+            showViews(tvMessage);
+        }
+
+
         view.findViewById(R.id.ibClose).setOnClickListener(v -> {
             windowManager.removeView(view);
 
@@ -223,14 +251,26 @@ public final class Utils {
         } else {
             tvName.setText("unknown Caller");
         }
-        if(!isNull(callerInfoModel.getProfileUri())) {
-            ImageView ivProfile = view.findViewById(R.id.sivProfile);
+        if (!isNull(callerInfoModel.getProfileUri())) {
+            ShapeableImageView ivProfile = view.findViewById(R.id.sivProfile);
             Glide.with(context).load(callerInfoModel.getProfileUri()).into(ivProfile);
         }
 
         TextView tvNumber = view.findViewById(R.id.tvNumber);
         tvNumber.setText(callerInfoModel.getNumber());
-        windowManager.addView(view, params);
+
+
+        if (isViewUpdate) {
+            try {
+                windowManager.removeView(view);
+                windowManager.addView(view, params);
+            } catch (Exception e) {
+                Log.d(TAG, "showDialogOverCall: error : " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            windowManager.addView(view, params);
+        }
     }
 
     public synchronized static List<HashMap<String, Object>> getAllContactForBackup(Context context) {
@@ -263,4 +303,76 @@ public final class Utils {
     }
 
 
+    public static ContactModel advanceSearch(Context context, String mobileNumber) {
+        ContactModel contactModel = ContactsQuery.searchByNumber(context, mobileNumber);
+        if (contactModel != null) {
+            return contactModel;
+        }
+        if (checkPermission(context, Manifest.permission.READ_CONTACTS)) {
+            searchNumberFromSystem(context, mobileNumber);
+
+        }
+        return null;
+    }
+
+
+    public static final Uri CONTACT_SEARCH_URI = ContactsContract.PhoneLookup.CONTENT_FILTER_URI;
+    private static final String PHOTO_URI = ContactsContract.CommonDataKinds.Photo.PHOTO_URI;
+
+    public static ContactModel searchNumberFromSystem(@NonNull Context context, String phoneNumber) {
+        ContentResolver cr = context.getContentResolver();
+        Uri uri = Uri.withAppendedPath(CONTACT_SEARCH_URI, Uri.encode(phoneNumber));
+
+        String[] projection = new String[]{ContactsContract.PhoneLookup.DISPLAY_NAME, PHOTO_URI};
+
+        Cursor cursor = cr.query(uri, projection, null, null, null);
+        if (cursor.getCount() == 0) {
+            return null;
+        }
+
+        String contactName = null;
+        String profileUri = null;
+        String number = null;
+        if (cursor.moveToFirst()) {
+            contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.PhoneLookup.DISPLAY_NAME));
+            profileUri = cursor.getString(cursor.getColumnIndex(PHOTO_URI));
+            number = phoneNumber;
+        }
+
+        if (!cursor.isClosed()) {
+            cursor.close();
+        }
+
+        ContactModel contactModel = new ContactModel(contactName);
+        contactModel.setImage(profileUri);
+        contactModel.setContactNumbers(new ContactNumberModel(number));
+
+        return contactModel;
+    }
+
+
+    public static CallerInfoModel getCallerInfoModel(final ContactModel contactModel) {
+        if (contactModel == null) {
+            return CallerInfoModel.getInstance(null, "invalid", -1
+                    , null, true, false);
+        }
+        return CallerInfoModel.getInstance(
+                contactModel.getName(), contactModel.getContactNumbers().get(0).getMobileNumber(), -1
+                , contactModel.getImage(), true, false
+        );
+    }
+
+    public static boolean isInternetConnectionAvailable(Context context) {
+        boolean isConnected = false;
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        if (activeNetwork != null) {
+            // connected to the internet
+            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI ||
+                    activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
+                isConnected = true;
+            }
+        }
+        return isConnected;
+    }
 }

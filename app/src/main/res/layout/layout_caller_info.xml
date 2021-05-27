@@ -53,11 +53,12 @@
                 android:orientation="horizontal">
 
 
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/sivProfile"
                     android:layout_width="65dp"
                     android:layout_height="65dp"
                     android:padding="2dp"
+                    app:shapeAppearanceOverlay="@style/circleImage"
                     android:scaleType="centerCrop"
                     android:src="@mipmap/test_image" />
 
@@ -107,9 +108,23 @@
                 android:layout_marginBottom="2dp"
                 android:background="@android:color/darker_gray" />
 
+            <TextView
+                android:id="@+id/tvNotification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Missed call"
+                android:visibility="gone"
+                android:textColor="@color/primary_light"
+                android:textSize="16sp"
+                tools:ignore="HardcodedText" />
+
+
             <LinearLayout
+                android:id="@+id/llOptionContainer"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/tvCall"

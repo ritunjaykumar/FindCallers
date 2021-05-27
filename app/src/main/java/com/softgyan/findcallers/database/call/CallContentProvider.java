@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.softgyan.findcallers.database.call.CallContract.CallDetails;
+import com.softgyan.findcallers.utils.Utils;
 
 public class CallContentProvider extends ContentProvider {
 
@@ -110,8 +111,23 @@ public class CallContentProvider extends ContentProvider {
         switch (match) {
 
             case CALL: {
+
+                if (selection != null && selectionArgs != null) {
+                    if (selectionArgs.length == Utils.getPlaceHolderCount(selection)) {
+                        String sql = String.format("SELECT * FROM %s u INNER JOIN %s m ON u.%s = m.%s ",
+                                CallDetails.CACHE_NAME_TABLE, CallDetails.CALL_HISTORY_TABLE,
+                                CallDetails.CACHE_NAME_ID, CallDetails.CALL_COLUMN_NAME_REF_ID);
+
+                        sql = sql+ selection;
+                        return database.rawQuery(sql, selectionArgs);
+                    }
+                    throw new UnsupportedOperationException("invalid query : " + uri.toString());
+                }
+
+
                 String call_sql = String.format("SELECT * FROM %s u INNER JOIN %s m ON u.%s = m.%s ORDER BY %S DESC;",
-                        CallDetails.CACHE_NAME_TABLE, CallDetails.CALL_HISTORY_TABLE, CallDetails.CACHE_NAME_ID, CallDetails.CALL_COLUMN_NAME_REF_ID, CallDetails.CALL_COLUMN_DATE);
+                        CallDetails.CACHE_NAME_TABLE, CallDetails.CALL_HISTORY_TABLE, CallDetails.CACHE_NAME_ID,
+                        CallDetails.CALL_COLUMN_NAME_REF_ID, CallDetails.CALL_COLUMN_DATE);
 
                 /*if (selectionArgs != null && selectionArgs.length == 1) {
                     call_sql = String.format("SELECT * FROM %s WHERE %s = %s",
@@ -132,7 +148,6 @@ public class CallContentProvider extends ContentProvider {
                 String call_sql = String.format("SELECT * FROM %s u INNER JOIN %s m ON u.%s = m.%s WHERE %s = %s ORDER BY %S ASC;",
                         CallDetails.CACHE_NAME_TABLE, CallDetails.CALL_HISTORY_TABLE, CallDetails.CACHE_NAME_ID,
                         CallDetails.CALL_COLUMN_NAME_REF_ID, CallDetails.CALL_COLUMN_ID, id, CallDetails.CALL_COLUMN_DATE);
-
 
                 return database.rawQuery(call_sql, null);
             }

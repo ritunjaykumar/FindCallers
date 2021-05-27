@@ -2,15 +2,18 @@ package com.softgyan.findcallers.widgets.activity;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
@@ -21,6 +24,7 @@ import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.preferences.AppPreference;
+import com.softgyan.findcallers.services.UploadContactService;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
@@ -61,6 +65,7 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_ALL && grantResults.length > 0) {
             for (int i = 0; i < grantResults.length; i++) {
                 if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
@@ -81,9 +86,9 @@ public class WelcomeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if(contactFlag && callFlag) {
+        if (contactFlag && callFlag) {
             super.onBackPressed();
-        }else{
+        } else {
             Toast.makeText(this, "you can't go back", Toast.LENGTH_SHORT).show();
         }
     }
@@ -95,10 +100,10 @@ public class WelcomeActivity extends AppCompatActivity {
             GettingContactBackgroundWork backgroundWork = new GettingContactBackgroundWork(this);
             backgroundWork.execute();
             Log.d(TAG, "savingDetails: part_2");
-            GettingCallLogBackgroundWork callWork = new GettingCallLogBackgroundWork(this);
-            callWork.execute();
-        }catch (Exception e){
-            Log.d(TAG, "savingDetails: "+e.getMessage());
+           /* GettingCallLogBackgroundWork callWork = new GettingCallLogBackgroundWork(this);
+            callWork.execute();*/
+        } catch (Exception e) {
+            Log.d(TAG, "savingDetails: " + e.getMessage());
         }
     }
 
@@ -131,11 +136,19 @@ public class WelcomeActivity extends AppCompatActivity {
         protected void onPostExecute(List<ContactModel> contactModels) {
             super.onPostExecute(contactModels);
             progressDialog.dismiss();
+            //debugging here remove comment
             SavingBackgroundWork backgroundWork = new SavingBackgroundWork(context);
             backgroundWork.execute(contactModels);
 //            for (ContactModel contactModel : contactModels) {
 //                Log.d(TAG, "onPostExecute: contactModel : " + contactModel.toString());
 //            }
+
+            Log.d(TAG, "onPostExecute: listSize : " + SystemContacts.uploadContactList.size());
+            new Handler().postDelayed(() -> {
+                Intent intent = new Intent(context, UploadContactService.class);
+                ContextCompat.startForegroundService(context, intent);
+                Log.d(TAG, "onPostExecute: start background service");
+            }, 0);
         }
     }
 

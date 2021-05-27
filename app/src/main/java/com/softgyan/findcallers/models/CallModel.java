@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CallModel implements Serializable {
     private  int nameId;
-    private final String cacheName;
+    private  String cacheName;
     private final List<CallNumberModel> callNumberList;
 
     public CallModel(int nameId, String cacheName) {
@@ -28,6 +28,10 @@ public class CallModel implements Serializable {
         this.nameId = -1;
         this.cacheName = "Unknown_" + number;
         this.callNumberList = new ArrayList<>();
+    }
+
+    public void setCacheName(String cacheName) {
+        this.cacheName = cacheName;
     }
 
     public void setNameId(int nameId) {

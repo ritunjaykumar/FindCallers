@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -13,6 +12,7 @@ import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.call.CallContract.CallDetails;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallNumberModel;
+import com.softgyan.findcallers.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -72,13 +72,13 @@ public final class CallQuery {
         return CALL_NUMBER_MODEL_LIST;
     }
 
-    private synchronized static int insertCallNumberLog(@Nullable Context context, final CallNumberModel callNumberModel) {
+    public synchronized static int insertCallNumberLog(@Nullable Context context, final CallNumberModel callNumberModel) {
         if (context != null) {
             ContentValues values = getContentValues(callNumberModel);
             if (values == null) return CommVar.INVALID_ARG;
 
             final Uri insert = context.getContentResolver().insert(CallDetails.CONTENT_CALL_URI, values);
-            if(insert == null){
+            if (insert == null) {
                 return CommVar.FAILED;
             }
             final long l = ContentUris.parseId(insert);
@@ -90,7 +90,7 @@ public final class CallQuery {
         ContentValues contentValues = new ContentValues();
         contentValues.put(CallDetails.CACHE_NAME, callModel.getCacheName());
         final Uri insertUri = context.getContentResolver().insert(CallDetails.CONTENT_CACHE_NAME_URI, contentValues);
-        if(insertUri == null){
+        if (insertUri == null) {
             return;
         }
         final int insertResult = (int) ContentUris.parseId(insertUri);
@@ -139,5 +139,39 @@ public final class CallQuery {
         String selection = CallDetails.CALL_COLUMN_NUMBER + " =?";
         String[] selectionArgs = new String[]{number};
         return context.getContentResolver().delete(CallDetails.CONTENT_CALL_URI, selection, selectionArgs);
+    }
+
+    public synchronized static CallModel searchCallHistoryByNumber(Context context, final String number) {
+        String filterNumber = Utils.trimNumber(number);
+        String selection = " WHERE " + CallDetails.CALL_COLUMN_NUMBER + " = ?";
+        String[] selectionArgs = {number};
+        final Cursor query = context.getContentResolver().query(CallDetails.CONTENT_CALL_URI, null, selection, selectionArgs, null);
+        if (query.getCount() == 0) {
+            return null;
+        }
+        query.moveToFirst();
+
+        int id = query.getInt(query.getColumnIndex(CallDetails.CALL_COLUMN_ID));
+        int refId = query.getInt(query.getColumnIndex(CallDetails.CALL_COLUMN_NAME_REF_ID));
+        String date = query.getString(query.getColumnIndex(CallDetails.CALL_COLUMN_DATE));
+        Date callDate = new Date(Long.parseLong(date));
+        long dur = query.getLong(query.getColumnIndex(CallDetails.CALL_COLUMN_DURATION));
+        String sim_id = query.getString(query.getColumnIndex(CallDetails.CALL_COLUMN_SUBSCRIPTION_ID));
+        int call_type = query.getInt(query.getColumnIndex(CallDetails.CALL_COLUMN_TYPE));
+
+
+        CallNumberModel callNumberModel = new CallNumberModel(
+                id, refId, number, callDate, call_type, sim_id, -1, (int) dur
+        );
+
+
+        CallModel callModel = new CallModel(
+                query.getInt(query.getColumnIndex(CallDetails.CACHE_NAME_ID)),
+                query.getString(query.getColumnIndex(CallDetails.CACHE_NAME)),
+                callNumberModel
+        );
+
+        query.close();
+        return callModel;
     }
 }

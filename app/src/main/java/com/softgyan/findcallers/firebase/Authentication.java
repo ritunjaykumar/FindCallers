@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Authentication {
     private static final String TAG = "Authentication";
-    private final Context mContext;
+    private final  Context mContext;
     private final FirebaseAuth mAuth;
     private String mVerificationId;
     private PhoneAuthProvider.ForceResendingToken mResendToken;

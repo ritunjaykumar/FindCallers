@@ -70,6 +70,17 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
             }
             case R.id.btnClearNumber:{
                 etNumber.setText("");
+                break;
+            }
+            case R.id.btnClearOtp:{
+                etOtp.setText("");
+                break;
+            }
+            case R.id.btnReset:{
+                mAuth = new Authentication(AccountActivity.this);
+                Utils.hideViews(etOtp, btnSendOtp, btnSendOtp, btnReset);
+                Utils.showViews(btnClearNumber, btnSendOtp);
+                Utils.enableViews(etNumber);
             }
         }
 
@@ -95,13 +106,17 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         public void onGetOtp() {
             mDialog.dismiss();
+            etOtp.setText("");
             Utils.showViews(etOtp, btnClearOtp, btnVerifyOtp, btnReset);
+            Utils.hideViews(btnClearNumber);
             Utils.toastMessage(AccountActivity.this, "You got otp, check your phone!");
         }
 
         @Override
         public void onSuccessLogin() {
             mDialog.dismiss();
+            Toast.makeText(AccountActivity.this, "login successful", Toast.LENGTH_SHORT).show();
+            Utils.openActivity(AccountActivity.this, WelcomeActivity.class, true);
         }
 
         @Override

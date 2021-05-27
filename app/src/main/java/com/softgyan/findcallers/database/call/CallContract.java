@@ -8,6 +8,8 @@ import com.softgyan.findcallers.database.contacts.IContactContract;
 public class CallContract {
 
     public static final class CallDetails implements BaseColumns {
+        private CallDetails(){}
+
         public static final String CALL_HISTORY_TABLE = "call_history";
         public static final String CALL_COLUMN_ID = "call_id";
         public static final String CALL_COLUMN_NAME_REF_ID = "name_ref_id";
