@@ -25,6 +25,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FindCallers">
+
         <activity
             android:name=".widgets.activity.AccountActivity"
             android:exported="true" />
@@ -64,6 +65,13 @@
         <activity
             android:name=".widgets.activity.MainActivity"
             android:exported="true" /> <!-- providers -->
+
+        <provider
+            android:name=".database.spam.SpamNumberProvider"
+            android:authorities="com.softgyan.findcallers.spam"
+            android:enabled="true"
+            android:exported="true"/>
+
         <provider
             android:name=".database.contacts.ContactContentProviders"
             android:authorities="com.softgyan.findcalllers"
@@ -74,7 +82,7 @@
             android:authorities="com.softgyan.findcaller.call"
             android:enabled="true"
             android:exported="false" /> <!-- receivers -->
-        <!--        todo change receiver name later-->
+        <!-- todo change receiver name later -->
         <receiver
             android:name=".receivers.CallReceiver"
             android:enabled="true">
@@ -94,11 +102,11 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".receivers.NotifyContactReceiver"
+            android:name=".receivers.SaveContactReceiver"
             android:exported="false" /> <!-- services -->
         <service android:name=".services.SimDetectorService" />
         <service android:name=".services.CallManagerServices" />
-        <service android:name=".services.UploadContactService"/>
+        <service android:name=".services.UploadContactService" />
     </application>
 
 </manifest>

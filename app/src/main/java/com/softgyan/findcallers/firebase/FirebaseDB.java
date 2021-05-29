@@ -15,16 +15,18 @@ import com.softgyan.findcallers.callback.OnUploadCallback;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.models.UploadContactModel;
 import com.softgyan.findcallers.models.UserInfoModel;
+import com.softgyan.findcallers.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public final class FirebaseUserData {
+public final class FirebaseDB {
     private static final FirebaseAuth mAuth;
     private static final FirebaseFirestore mFirestore;
     final static String docName;
+    private static final String TAG = "FirebaseDB";
 
     static {
         mAuth = FirebaseAuth.getInstance();
@@ -172,7 +174,6 @@ public final class FirebaseUserData {
             sucCall.notifyCall();
         }
 
-
         public synchronized static void getMobileNumber(@NonNull String mobileNumber, OnResultCallback<ContactModel> callback) {
             mFirestore.collection(FirebaseVar.MobileNumber.MOBILE_DB_NAME)
                     .document(mobileNumber)
@@ -190,6 +191,83 @@ public final class FirebaseUserData {
                         callback.onSuccess(contactModel);
 
                     }).addOnFailureListener(e -> callback.onFailed(e.getMessage()));
+        }
+    }
+
+
+    public static final class SpamDB {
+        public static void uploadSpamNumber(HashMap<String, Object> spamMap, OnUploadCallback callback) {
+            if (spamMap.get(FirebaseVar.SpamDB.MOBILE_NUMBER) == null) {
+                return;
+            }
+
+            String mobileNumber = Utils.trimNumber(spamMap.get(FirebaseVar.SpamDB.MOBILE_NUMBER).toString());
+            MobileNumberInfo.checkDocumentExits(FirebaseVar.SpamDB.SPAM_DB_NAME, mobileNumber, new OnResultCallback<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(@NonNull DocumentSnapshot ds) {
+                    //if exits
+                    try {
+                        int totalName = Objects.requireNonNull(ds.getLong(FirebaseVar.SpamDB.TOTAL_NAME)).intValue();
+                        int totalVote = Objects.requireNonNull(ds.getLong(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE)).intValue();
+                        totalVote++;
+                        totalName++;
+                        HashMap<String, Object> tempSpam = new HashMap<>();
+                        tempSpam.put(FirebaseVar.SpamDB.NAME + totalName, spamMap.get(FirebaseVar.SpamDB.NAME));
+                        tempSpam.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY + totalName, spamMap.get(FirebaseVar.SpamDB.SPAM_TYPE_KEY));
+                        tempSpam.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, totalVote);
+                        tempSpam.put(FirebaseVar.SpamDB.TOTAL_NAME, totalName);
+
+                        FirebaseBasic.updateData(FirebaseVar.SpamDB.SPAM_DB_NAME, mobileNumber,
+                                tempSpam, () -> callback.onUploadSuccess("upload successful"));
+
+
+                    } catch (Exception e) {
+                        Log.d(TAG, "onSuccess: error message : " + e.getMessage());
+                        callback.onUploadFailed(e.getMessage());
+                    }
+
+                }
+
+                @Override
+                public void onFailed(String failedMessage) {
+                    //not exits
+                    FirebaseBasic.uploadData(FirebaseVar.SpamDB.SPAM_DB_NAME, mobileNumber, spamMap, new OnUploadCallback() {
+                        @Override
+                        public void onUploadSuccess(String message) {
+                            callback.onUploadSuccess(message);
+                        }
+
+                        @Override
+                        public void onUploadFailed(String failedMessage) {
+                            callback.onUploadFailed(failedMessage);
+                        }
+                    });
+
+                }
+            });
+        }
+
+        public static void getSpamNumber(String number, OnResultCallback<HashMap<String, Object>> callback) {
+            mFirestore.collection(FirebaseVar.SpamDB.SPAM_DB_NAME)
+                    .document(number)
+                    .get()
+                    .addOnSuccessListener(ds -> {
+                        try {
+                            HashMap<String, Object> tempMapSpam = new HashMap<>();
+                            int totalName = ds.getLong(FirebaseVar.SpamDB.TOTAL_NAME).intValue();
+                            tempMapSpam.put(FirebaseVar.SpamDB.MOBILE_NUMBER, number);
+                            tempMapSpam.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, ds.getLong(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE).intValue());
+                            if (totalName > 1) {
+                                tempMapSpam.put(FirebaseVar.SpamDB.NAME, ds.getString(FirebaseVar.SpamDB.NAME + 1));
+                                tempMapSpam.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY, ds.getString(FirebaseVar.SpamDB.SPAM_TYPE_KEY + 1));
+                            }
+                            callback.onSuccess(tempMapSpam);
+                        } catch (Exception e) {
+                            callback.onFailed(e.getMessage());
+                        }
+
+                    })
+                    .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
         }
     }
 

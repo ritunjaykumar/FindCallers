@@ -8,6 +8,8 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_block.xml" value="0.22552083333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_call.xml" value="0.22552083333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_close.xml" value="0.22552083333333334" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_delete.xml" value="0.22447916666666667" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_edit.xml" value="0.22447916666666667" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_favroite.xml" value="0.22552083333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_in_coming.xml" value="0.22552083333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_info.xml" value="0.22552083333333334" />
@@ -21,14 +23,16 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/ic_verify.xml" value="0.22552083333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_account.xml" value="0.25" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_backup_and_restore.xml" value="0.33" />
-        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_block_number.xml" value="0.1953125" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_block_number.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_contact_detail.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_example.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_incomming.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_main.xml" value="0.22" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_search_number.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_splash.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_user_account_setting.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_welcome.xml" value="0.209375" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/block_item_layout.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/collapse_notification_layout.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/custom_tool_bar.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/expanded_notification_layout.xml" value="0.25" />

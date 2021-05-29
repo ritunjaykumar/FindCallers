@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -20,7 +21,7 @@ import com.softgyan.findcallers.application.App;
 import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.database.call.system.SystemCalls;
 import com.softgyan.findcallers.database.query.CallQuery;
-import com.softgyan.findcallers.firebase.FirebaseUserData;
+import com.softgyan.findcallers.firebase.FirebaseDB;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
@@ -171,9 +172,12 @@ public class CallManagerServices extends Service {
                         callerInfoModels.setMessage(null);
                     }
 
-                    saveLastCallHistory(getApplicationContext(), mobNumber);
+                    SystemClock.sleep(2000);
+
                     showDialogOverCall(callerInfoModels, true);
+                    saveLastCallHistory(getApplicationContext(), mobNumber);
                     stopService();
+
                 }
 
 
@@ -182,6 +186,7 @@ public class CallManagerServices extends Service {
     };
 
     private void searchNumber(final String mobNum) {
+        Log.d(TAG, "searchNumber: mobileNumber : "+mobNum);
         final ContactModel contactModel = Utils.advanceSearch(getApplicationContext(), mobNum);
         if (contactModel != null) {
             callerInfoModels = Utils.getCallerInfoModel(contactModel);
@@ -189,7 +194,7 @@ public class CallManagerServices extends Service {
         } else {
             if (Utils.isInternetConnectionAvailable(getApplicationContext())) {
 
-                FirebaseUserData.MobileNumberInfo.getMobileNumber(mobNum, new OnResultCallback<ContactModel>() {
+                FirebaseDB.MobileNumberInfo.getMobileNumber(mobNum, new OnResultCallback<ContactModel>() {
                     @Override
                     public void onSuccess(@NonNull ContactModel contactModel) {
                         callerInfoModels = Utils.getCallerInfoModel(contactModel);
@@ -220,6 +225,10 @@ public class CallManagerServices extends Service {
             return;
         }
         final CallModel callModel = CallQuery.searchCallHistoryByNumber(context, number);
+        Log.d(TAG, "saveLastCallHistory: Last callHistory : "+lastCallHistory);
+        Log.d(TAG, "saveLastCallHistory: callModel  : "+callModel);
+
+
         if (callModel != null) {
             lastCallHistory.setNameId(callModel.getNameId());
             lastCallHistory.getCallNumberList().get(0).setNameRefId(callModel.getNameId());

@@ -309,7 +309,7 @@ public final class Utils {
             return contactModel;
         }
         if (checkPermission(context, Manifest.permission.READ_CONTACTS)) {
-            searchNumberFromSystem(context, mobileNumber);
+           return searchNumberFromSystem(context, mobileNumber);
 
         }
         return null;

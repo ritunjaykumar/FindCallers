@@ -2,6 +2,7 @@ package com.softgyan.findcallers.database.contacts.system;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -32,13 +33,7 @@ public final class SystemContacts {
     public final static List<UploadContactModel> uploadContactList = new ArrayList<>();
 
     private static void getContactsList(final Context context) {
-
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(context, "Read and write contacts permission is denied", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
+        if (!isContactPermissionGranted(context)) return;
 
         String[] projection = new String[]{ID, DISPLAY_NAME, NUMBER, PHOTO_URI};
 
@@ -99,5 +94,34 @@ public final class SystemContacts {
         return contactsList;
     }
 
+
+    public static synchronized void saveContactToSystem(Context context, ContactModel contactModel) {
+        if (!isContactPermissionGranted(context)) return;
+
+        Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
+        intent.setType(ContactsContract.RawContacts.CONTENT_TYPE);
+        if (contactModel.getEmailId() != null) {
+            intent.putExtra(ContactsContract.Intents.Insert.EMAIL, contactModel.getEmailId());
+            intent.putExtra(ContactsContract.Intents.Insert.EMAIL_TYPE,
+                    ContactsContract.CommonDataKinds.Email.TYPE_WORK);
+        }
+        if (contactModel.getName() != null) {
+            intent.putExtra(ContactsContract.Intents.Insert.NAME, contactModel.getEmailId());
+        }
+        if (contactModel.getContactNumbers().get(0) != null &&
+                contactModel.getContactNumbers().get(0).getMobileNumber() != null)
+            intent.putExtra(ContactsContract.Intents.Insert.PHONE, contactModel.getContactNumbers().get(0).getMobileNumber());
+        context.startActivity(intent);
+    }
+
+
+    private static boolean isContactPermissionGranted(Context context) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(context, "Read and write contacts permission is denied", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        return true;
+    }
 
 }

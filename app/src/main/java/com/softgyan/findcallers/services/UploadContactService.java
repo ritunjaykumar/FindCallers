@@ -12,7 +12,7 @@ import androidx.core.app.NotificationCompat;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.application.App;
 import com.softgyan.findcallers.database.contacts.system.SystemContacts;
-import com.softgyan.findcallers.firebase.FirebaseUserData;
+import com.softgyan.findcallers.firebase.FirebaseDB;
 import com.softgyan.findcallers.models.UploadContactModel;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class UploadContactService extends Service {
             stopSelf();
             return START_NOT_STICKY;
         }
-        FirebaseUserData.MobileNumberInfo.uploadContacts(uploadContactList, this::stopSelf);
+        FirebaseDB.MobileNumberInfo.uploadContacts(uploadContactList, this::stopSelf);
 
         return START_NOT_STICKY;
     }

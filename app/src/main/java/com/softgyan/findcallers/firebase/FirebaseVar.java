@@ -21,4 +21,13 @@ public final class FirebaseVar {
         public static final String USER_NAME = "userName";
         public static final String USER_NAME_SET = "userSetName";
     }
+
+    public static final class SpamDB {
+        public static final String SPAM_DB_NAME = "spamDB";
+        public static final String MOBILE_NUMBER = "mobileNumber";
+        public static final String SPAM_TYPE_KEY = "spamType_";
+        public static final String TOTAL_SPAM_VOTE = "totalVote";
+        public static final String TOTAL_NAME = "totalName";
+        public static final String NAME = "name_";
+    }
 }

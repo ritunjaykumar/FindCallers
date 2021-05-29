@@ -39,6 +39,7 @@ public final class CallHardware {
             if (SimDetails.getSimState(context) == SIM_READY) {
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
                 callIntent.setData(Uri.parse("tel:" + number));
+                callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(callIntent);
             } else {
                 Toast.makeText(context, "Sim card is not ready to call", Toast.LENGTH_SHORT).show();
