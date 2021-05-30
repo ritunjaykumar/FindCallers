@@ -1,5 +1,6 @@
 package com.softgyan.findcallers.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Build;
@@ -17,10 +18,9 @@ import com.softgyan.findcallers.hardware.CallHardware;
 import com.softgyan.findcallers.models.CallerInfoModel;
 
 public class CallerDialog {
-    private WindowManager windowManager;
+    private final WindowManager windowManager;
     private WindowManager.LayoutParams params;
-    private LayoutInflater layoutInflater;
-    private int layoutParams;
+    private final LayoutInflater layoutInflater;
     private static final String TAG = "CallerDialog";
 
     private View view;
@@ -36,6 +36,7 @@ public class CallerDialog {
 
     private void setupWindowDialog() {
         if (Utils.requestOverlayPermission(context)) return;
+        int layoutParams;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             layoutParams = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
@@ -55,6 +56,7 @@ public class CallerDialog {
         );
     }
 
+    @SuppressLint("SetTextI18n")
     public void showDialog(final CallerInfoModel callerInfo, boolean isViewUpdate) {
         if (callerInfo == null) return;
         if (isViewUpdate) {
@@ -62,7 +64,7 @@ public class CallerDialog {
             Utils.showViews(linearLayout);
         }
 
-        if (!Utils.isNull(callerInfo.getMessage())) {
+        if (callerInfo.getMessage() != null) {
             TextView tvMessage = view.findViewById(R.id.tvNotification);
             tvMessage.setText(callerInfo.getMessage());
             Utils.showViews(tvMessage);
@@ -70,12 +72,12 @@ public class CallerDialog {
 
 
         view.findViewById(R.id.ibClose).setOnClickListener(v -> {
-            windowManager.removeView(view);
+            closeWindowManager();
 
         });
         view.findViewById(R.id.tvCall).setOnClickListener(v -> {
             CallHardware.makeCall(context, callerInfo.getNumber());
-
+            closeWindowManager();
         });
         TextView tvName = view.findViewById(R.id.tvName);
         if (!Utils.isNull(callerInfo.getName())) {
@@ -102,6 +104,10 @@ public class CallerDialog {
         } else {
             windowManager.addView(view, params);
         }
+    }
+
+    private void closeWindowManager(){
+        windowManager.removeView(view);
     }
 
 }

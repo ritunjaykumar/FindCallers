@@ -1,6 +1,5 @@
 package com.softgyan.findcallers.widgets.activity;
 
-import android.app.Dialog;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -76,6 +75,7 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         if (id == R.id.ibClear) {
             etSearch.setText(null);
         } else if (id == R.id.btnSearch) {
+            Utils.hideViews(cardView);
             searchOperation();
         } else if (id == R.id.btnAddToSpam) {
             insertSpamNumber();
@@ -111,7 +111,7 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
 
         if (contactModel == null) {
             if (!Utils.isInternetConnectionAvailable(this)) {
-                Toast.makeText(this, "internet connection is not available", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Not found", Toast.LENGTH_SHORT).show();
                 pDialog.dismiss();
                 return;
             }

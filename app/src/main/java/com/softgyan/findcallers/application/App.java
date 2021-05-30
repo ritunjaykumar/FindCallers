@@ -13,7 +13,6 @@ import com.softgyan.findcallers.database.query.CallQuery;
 import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
-import com.softgyan.findcallers.models.SimCardInfoModel;
 import com.softgyan.findcallers.preferences.AppPreference;
 
 import java.util.List;
@@ -22,12 +21,12 @@ public class App extends Application {
     private static final String TAG = App.class.getName();
 
     public static final String CHANNEL_ID_1 = "channel-1";
+    public static final String CHANNEL_ID_2 = "channel-2";
 
     @Override
     public void onCreate() {
         super.onCreate();
         getContacts();
-        SimCardInfoModel.getSimInfoS(this);
         createNotificationChannels();
         Log.d(TAG, "onCreate: called");
     }
@@ -38,8 +37,12 @@ public class App extends Application {
             NotificationChannel notificationChannel1 = new NotificationChannel(
                     CHANNEL_ID_1, "getContacts", NotificationManager.IMPORTANCE_DEFAULT
             );
+            NotificationChannel notificationChannel2 = new NotificationChannel(
+                    CHANNEL_ID_2, "SimDetection", NotificationManager.IMPORTANCE_LOW
+            );
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(notificationChannel1);
+            notificationManager.createNotificationChannel(notificationChannel2);
         }
     }
 

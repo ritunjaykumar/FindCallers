@@ -100,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
             intent = new Intent(this, BlockNumberActivity.class);
         } else if (itemId == R.id.navBackupRestore) {
             intent = new Intent(this, BackupAndRestoreActivity.class);
+        } else if (itemId == R.id.navFindMobile) {
+            intent = new Intent(this, FindMobileActivity.class);
         } else {
             return;
         }

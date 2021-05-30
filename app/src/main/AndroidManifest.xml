@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
 
     <application
         android:name=".application.App"
@@ -25,19 +26,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FindCallers">
-
+        <activity
+            android:name=".widgets.activity.FindMobileActivity"
+            android:exported="true"
+            android:launchMode="singleTask" />
         <activity
             android:name=".widgets.activity.AccountActivity"
             android:exported="true" />
         <activity
             android:name=".widgets.activity.BackupAndRestoreActivity"
             android:exported="true" />
-        <activity
-            android:name=".temp.TempCallActivity"
-            android:allowEmbedded="true"
-            android:exported="true"
-            android:noHistory="true"
-            android:theme="@style/Theme.Transparent" />
         <activity
             android:name=".widgets.activity.ContactDetailActivity"
             android:exported="true" />
@@ -65,13 +63,11 @@
         <activity
             android:name=".widgets.activity.MainActivity"
             android:exported="true" /> <!-- providers -->
-
         <provider
             android:name=".database.spam.SpamNumberProvider"
             android:authorities="com.softgyan.findcallers.spam"
             android:enabled="true"
-            android:exported="true"/>
-
+            android:exported="true" />
         <provider
             android:name=".database.contacts.ContactContentProviders"
             android:authorities="com.softgyan.findcalllers"

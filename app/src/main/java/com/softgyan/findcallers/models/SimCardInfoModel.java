@@ -1,11 +1,15 @@
 package com.softgyan.findcallers.models;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 
 import com.softgyan.findcallers.utils.CallUtils;
 import com.softgyan.findcallers.utils.exception.InvalidException;
@@ -97,7 +101,7 @@ public final class SimCardInfoModel implements Serializable {
             return simCardInfoList;
         }
         try {
-            final List<SubscriptionInfo> simCardInfoS = CallUtils.getSimCardInfo(context);
+            final List<SubscriptionInfo> simCardInfoS = getSimCardInfo(context);
             for (SubscriptionInfo si : simCardInfoS) {
                 final SimCardInfoModel sci;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -122,5 +126,16 @@ public final class SimCardInfoModel implements Serializable {
         return simCardInfoList;
     }
 
+    public static List<SubscriptionInfo> getSimCardInfo(Context context) throws InvalidException {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
+                PackageManager.PERMISSION_GRANTED) {
+            final SubscriptionManager subscriptionManager =
+                    (SubscriptionManager) context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE);
+
+            return subscriptionManager.getActiveSubscriptionInfoList();
+        }
+        throw new InvalidException("Permission Not Granted -> Manifest.permission.READ_PHONE_STATE");
+
+    }
 
 }

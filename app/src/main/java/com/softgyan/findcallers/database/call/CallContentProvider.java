@@ -119,6 +119,7 @@ public class CallContentProvider extends ContentProvider {
                                 CallDetails.CACHE_NAME_ID, CallDetails.CALL_COLUMN_NAME_REF_ID);
 
                         sql = sql+ selection;
+                        Log.d(TAG, "query: sql : "+sql);
                         return database.rawQuery(sql, selectionArgs);
                     }
                     throw new UnsupportedOperationException("invalid query : " + uri.toString());

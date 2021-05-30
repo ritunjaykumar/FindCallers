@@ -23,6 +23,7 @@ import com.softgyan.findcallers.database.query.CallQuery;
 import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
+import com.softgyan.findcallers.models.SimCardInfoModel;
 import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.services.UploadContactService;
 import com.softgyan.findcallers.utils.Utils;
@@ -57,9 +58,23 @@ public class WelcomeActivity extends AppCompatActivity {
         }
         if (Utils.checkPermission(this, permissions)) {
             savingDetails();
+            saveSimInfo();
         }
 
 
+    }
+
+    private void saveSimInfo() {
+        final List<SimCardInfoModel> simInfoS = SimCardInfoModel.getSimInfoS(this);
+        if (simInfoS == null) {
+            Toast.makeText(this, "There are no sims detected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String[] tempIccCode = new String[simInfoS.size()];
+        for (int i = 0; i < tempIccCode.length; i++) {
+            tempIccCode[i] = simInfoS.get(i).getIccId();
+        }
+        AppPreference.SimPreference.setSimIcc(this, tempIccCode);
     }
 
 

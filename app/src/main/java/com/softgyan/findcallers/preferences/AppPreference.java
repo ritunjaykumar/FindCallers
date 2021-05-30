@@ -29,11 +29,11 @@ public final class AppPreference {
 
 
     public static final class SimPreference {
-        private static final String SIM_ICC_KEY = "simIccCode_";
-        private static final String SIM_ICC_SIZE_KEY = "simIccSize";
-        private static final String SIM_INFO_MESSAGE = "simInfoMessage";
-        private static final String FIRST_NUMBER_KEY = "firstNumberKey";
-        private static final String SECOND_NUMBER_KEY = "secondNumberKey";
+        public static final String SIM_ICC_KEY = "simIccCode_";
+        public static final String SIM_ICC_SIZE_KEY = "simIccSize";
+        public static final String SIM_INFO_MESSAGE = "simInfoMessage";
+        public static final String FIRST_NUMBER_KEY = "firstNumberKey";
+        public static final String SECOND_NUMBER_KEY = "secondNumberKey";
 
         public static void setSimIcc(final Context context, final String... simIccS) {
             for (int i = 0; i < simIccS.length; i++) {
@@ -43,6 +43,8 @@ public final class AppPreference {
             }
             final SharedPreferences.Editor sharedEditor = getSharedEditor(context);
             sharedEditor.putInt(SIM_ICC_SIZE_KEY, simIccS.length);
+            sharedEditor.apply();
+
         }
 
         public static String[] getSimIccS(Context context) {
@@ -61,24 +63,29 @@ public final class AppPreference {
         public static void setSimMessage(Context context, String message) {
             final SharedPreferences.Editor sharedEditor = getSharedEditor(context);
             sharedEditor.putString(SIM_INFO_MESSAGE, message);
+            sharedEditor.apply();
         }
 
-        public static void setFirstNumber(Context context, String firstNumber){
+        public static void setFirstNumber(Context context, String firstNumber) {
             final SharedPreferences.Editor sharedEditor = getSharedEditor(context);
             sharedEditor.putString(FIRST_NUMBER_KEY, firstNumber);
+            sharedEditor.apply();
         }
-        public static void setSecondNumber(Context context, String secondNumber){
+
+        public static void setSecondNumber(Context context, String secondNumber) {
             final SharedPreferences.Editor sharedEditor = getSharedEditor(context);
             sharedEditor.putString(SECOND_NUMBER_KEY, secondNumber);
+            sharedEditor.apply();
         }
 
-        public static String getFirstNumber(Context context){
+        public static String getFirstNumber(Context context) {
             return getSharedPref(context).getString(FIRST_NUMBER_KEY, null);
+
         }
-        public static String getSecondNumber(Context context){
+
+        public static String getSecondNumber(Context context) {
             return getSharedPref(context).getString(SECOND_NUMBER_KEY, null);
         }
-
 
     }
 

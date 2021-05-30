@@ -144,7 +144,7 @@ public final class CallQuery {
     public synchronized static CallModel searchCallHistoryByNumber(Context context, final String number) {
         String filterNumber = Utils.trimNumber(number);
         String selection = " WHERE " + CallDetails.CALL_COLUMN_NUMBER + " = ?";
-        String[] selectionArgs = {number};
+        String[] selectionArgs = {filterNumber};
         final Cursor query = context.getContentResolver().query(CallDetails.CONTENT_CALL_URI, null, selection, selectionArgs, null);
         if (query.getCount() == 0) {
             return null;

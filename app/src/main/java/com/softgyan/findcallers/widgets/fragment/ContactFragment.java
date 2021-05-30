@@ -30,7 +30,7 @@ public class ContactFragment extends Fragment implements View.OnClickListener {
     private EditText tvSearchView;
     private ContactsAdapter contactsAdapter;
 
-    private ContactFragment() {
+    public ContactFragment() {
         // Required empty public constructor
     }
 

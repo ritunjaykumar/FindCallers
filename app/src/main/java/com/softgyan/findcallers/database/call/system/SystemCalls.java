@@ -130,7 +130,7 @@ public final class SystemCalls {
             );
             CallModel callModel = new CallModel(-1, userName, callNumberTemp);
             callList.add(callModel);
-
+            cursor.close();
             return callModel;
 
         } catch (

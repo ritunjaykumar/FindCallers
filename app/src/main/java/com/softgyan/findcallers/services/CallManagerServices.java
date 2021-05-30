@@ -1,5 +1,6 @@
 package com.softgyan.findcallers.services;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -21,8 +22,10 @@ import com.softgyan.findcallers.application.App;
 import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.database.call.system.SystemCalls;
 import com.softgyan.findcallers.database.query.CallQuery;
+import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.firebase.FirebaseDB;
 import com.softgyan.findcallers.models.CallModel;
+import com.softgyan.findcallers.models.CallNumberModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.utils.CallerDialog;
@@ -47,6 +50,8 @@ public class CallManagerServices extends Service {
     private volatile boolean isOutgoing = false;
     private volatile boolean isHooked = false;
     private volatile boolean isCallInitiate = false;
+
+
     private volatile Intent callIntent = null;
     private CountDownTimer countDownTimer;
     private int lastUpdate = -1;
@@ -54,6 +59,7 @@ public class CallManagerServices extends Service {
     private CallerDialog callerDialog;
 
     private CallerInfoModel callerInfoModels;
+    private ContactModel mContactModel;
 
     @Override
     public void onCreate() {
@@ -123,9 +129,7 @@ public class CallManagerServices extends Service {
 
     private void showDialogOverCall(CallerInfoModel callerInfoModel, boolean isViewUpdated) {
         Handler handler = new Handler(getApplicationContext().getMainLooper());
-
         Runnable runnable = () -> callerDialog.showDialog(callerInfoModel, isViewUpdated);
-//        Runnable runnable = () -> Utils.showDialogOverCall(getApplicationContext(), callerInfoModel, isViewUpdated);
         handler.post(runnable);
     }
 
@@ -177,7 +181,6 @@ public class CallManagerServices extends Service {
                     showDialogOverCall(callerInfoModels, true);
                     saveLastCallHistory(getApplicationContext(), mobNumber);
                     stopService();
-
                 }
 
 
@@ -186,10 +189,23 @@ public class CallManagerServices extends Service {
     };
 
     private void searchNumber(final String mobNum) {
-        Log.d(TAG, "searchNumber: mobileNumber : "+mobNum);
-        final ContactModel contactModel = Utils.advanceSearch(getApplicationContext(), mobNum);
-        if (contactModel != null) {
-            callerInfoModels = Utils.getCallerInfoModel(contactModel);
+        Log.d(TAG, "searchNumber: mobileNumber : " + mobNum);
+        boolean flagLocalContact = false;
+        boolean flagSystemContact = false;
+
+        mContactModel = ContactsQuery.searchByNumber(getApplicationContext(), mobNumber);
+        if (mContactModel == null) {
+            if (Utils.checkPermission(getApplicationContext(), Manifest.permission.READ_CONTACTS)) {
+                mContactModel = Utils.searchNumberFromSystem(getApplicationContext(), mobNumber);
+                if (mContactModel != null) {
+                    flagSystemContact = true;
+                }
+            }
+        } else {
+            flagLocalContact = true;
+        }
+        if (flagLocalContact || flagSystemContact) {
+            callerInfoModels = Utils.getCallerInfoModel(mContactModel);
             showDialogOverCall(callerInfoModels, false);
         } else {
             if (Utils.isInternetConnectionAvailable(getApplicationContext())) {
@@ -197,6 +213,7 @@ public class CallManagerServices extends Service {
                 FirebaseDB.MobileNumberInfo.getMobileNumber(mobNum, new OnResultCallback<ContactModel>() {
                     @Override
                     public void onSuccess(@NonNull ContactModel contactModel) {
+                        mContactModel = contactModel;
                         callerInfoModels = Utils.getCallerInfoModel(contactModel);
                         showDialogOverCall(callerInfoModels, false);
 
@@ -214,8 +231,8 @@ public class CallManagerServices extends Service {
                         null, false, false);
                 showDialogOverCall(callerInfoModels, false);
             }
-
         }
+
     }
 
     private void saveLastCallHistory(Context context, String number) {
@@ -224,28 +241,25 @@ public class CallManagerServices extends Service {
         if (lastCallHistory == null) {
             return;
         }
+        Log.d(TAG, "saveLastCallHistory: searched number : "+mContactModel);
+
         final CallModel callModel = CallQuery.searchCallHistoryByNumber(context, number);
-        Log.d(TAG, "saveLastCallHistory: Last callHistory : "+lastCallHistory);
-        Log.d(TAG, "saveLastCallHistory: callModel  : "+callModel);
-
-
+        Log.d(TAG, "saveLastCallHistory: searched number from Local : " + callModel);
         if (callModel != null) {
-            lastCallHistory.setNameId(callModel.getNameId());
-            lastCallHistory.getCallNumberList().get(0).setNameRefId(callModel.getNameId());
+            CallNumberModel callNumberModel = lastCallHistory.getFirstCall();
+            callNumberModel.setNameRefId(callModel.getNameId());
+            final int i = CallQuery.insertCallNumberLog(getApplicationContext(), callNumberModel);
+            if (i == 0) Log.d(TAG, "saveLastCallHistory: number not save : " + callNumberModel);
+            else Log.d(TAG, "saveLastCallHistory: number save : " + callNumberModel);
         } else {
-            CallQuery.insertCallNumberLog(context, lastCallHistory.getCallNumberList().get(0));
-            return;
-        }
-
-        if (lastCallHistory.getCacheName() == null) {
-            try {
-                lastCallHistory.setCacheName(callerInfoModels.getName());
-            } catch (Exception e) {
-                Log.d(TAG, "saveCallLog: error : " + e.getMessage());
+            if (mContactModel != null) {
+                String name = mContactModel.getName();
+                if (lastCallHistory.getCacheName() == null) {
+                    lastCallHistory.setCacheName(name);
+                }
             }
+            CallQuery.insertCallLog(getApplicationContext(), lastCallHistory);
         }
-
-        CallQuery.insertCallLog(context, lastCallHistory);
     }
 
     private final BroadcastReceiver bReceiver = new BroadcastReceiver() {

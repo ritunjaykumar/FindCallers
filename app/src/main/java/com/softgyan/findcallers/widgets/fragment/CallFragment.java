@@ -26,7 +26,7 @@ public class CallFragment extends Fragment {
 
     private RecyclerView recyclerView;
 
-    private CallFragment() {
+    public CallFragment() {
         // Required empty public constructor
     }
 
