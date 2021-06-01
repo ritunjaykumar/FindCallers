@@ -1,6 +1,8 @@
 package com.softgyan.findcallers.widgets.fragment;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +29,7 @@ public class ContactFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = ContactFragment.class.getName();
     private final List<ContactModel> contactList = new ArrayList<>(CommVar.contactsList);
     private RecyclerView recyclerView;
-    private EditText tvSearchView;
+    private EditText etSearchView;
     private ContactsAdapter contactsAdapter;
 
     public ContactFragment() {
@@ -48,7 +50,7 @@ public class ContactFragment extends Fragment implements View.OnClickListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         recyclerView = view.findViewById(R.id.recyclerView);
-        tvSearchView = view.findViewById(R.id.etSearchView);
+        etSearchView = view.findViewById(R.id.etSearchView);
 
         contactsAdapter = new ContactsAdapter(getContext(), contactList);
         recyclerView.setAdapter(contactsAdapter);
@@ -56,6 +58,24 @@ public class ContactFragment extends Fragment implements View.OnClickListener {
 
         ImageButton ibClear = view.findViewById(R.id.ibClear);
         ibClear.setOnClickListener(this);
+
+
+        etSearchView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                //do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                contactsAdapter.getFilter().filter(s);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                //do nothing
+            }
+        });
     }
 
     @Override
@@ -73,6 +93,11 @@ public class ContactFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-
+        int id = v.getId();
+        if (id == R.id.ibClear) {
+            etSearchView.setText(null);
+        }
     }
 }
+
+

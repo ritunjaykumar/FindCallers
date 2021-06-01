@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".widgets.activity.AllCallHistoryActivity">
+
+    <include layout="@layout/custom_tool_bar"/>
+    <RadioGroup
+        android:id="@+id/rgCallOption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rbAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="All"
+            tools:ignore="HardcodedText" />
+
+        <RadioButton
+            android:id="@+id/rbMissed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:text="Missed"
+            tools:ignore="HardcodedText" />
+
+        <RadioButton
+            android:id="@+id/rbIncoming"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:text="Incoming"
+            tools:ignore="HardcodedText" />
+        <RadioButton
+            android:id="@+id/rbOutgoing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:layout_weight="1"
+            android:text="Outgoind"
+            tools:ignore="HardcodedText" />
+    </RadioGroup>
+
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/primary_light" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCallHistory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="4dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/layout_call_adapter" />
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="Block list is empty"
+            android:textColor="@color/accent"
+            android:textSize="22sp"
+            android:visibility="gone"
+            tools:ignore="HardcodedText" />
+    </RelativeLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>

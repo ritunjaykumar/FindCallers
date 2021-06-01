@@ -96,6 +96,7 @@ public final class SystemContacts {
 
 
     public static synchronized void saveContactToSystem(Context context, ContactModel contactModel) {
+        Log.d(TAG, "saveContactToSystem: contact model : "+contactModel);
         if (!isContactPermissionGranted(context)) return;
 
         Intent intent = new Intent(ContactsContract.Intents.Insert.ACTION);
@@ -106,7 +107,7 @@ public final class SystemContacts {
                     ContactsContract.CommonDataKinds.Email.TYPE_WORK);
         }
         if (contactModel.getName() != null) {
-            intent.putExtra(ContactsContract.Intents.Insert.NAME, contactModel.getEmailId());
+            intent.putExtra(ContactsContract.Intents.Insert.NAME, contactModel.getName());
         }
         if (contactModel.getContactNumbers().get(0) != null &&
                 contactModel.getContactNumbers().get(0).getMobileNumber() != null)

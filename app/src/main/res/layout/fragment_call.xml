@@ -15,4 +15,19 @@
         tools:listitem="@layout/layout_call_adapter" />
 
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_hide_show_key_pad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="22dp"
+        android:clickable="true"
+        android:contentDescription="@string/app_name"
+        android:focusable="true"
+        android:src="@drawable/ic_dialpad"
+        android:visibility="gone"
+        app:tint="@color/white" />
+
+    <include layout="@layout/layout_dialing_pad"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

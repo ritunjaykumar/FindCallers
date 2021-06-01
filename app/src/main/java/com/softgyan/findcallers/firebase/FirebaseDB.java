@@ -4,8 +4,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -218,12 +216,18 @@ public final class FirebaseDB {
                         tempSpam.put(FirebaseVar.SpamDB.TOTAL_NAME, totalName);
 
                         FirebaseBasic.updateData(FirebaseVar.SpamDB.SPAM_DB_NAME, mobileNumber,
-                                tempSpam, () -> callback.onUploadSuccess("upload successful"));
+                                tempSpam, () -> {
+                                    if (callback != null) {
+                                        callback.onUploadSuccess("upload successful");
+                                    }
+                                });
 
 
                     } catch (Exception e) {
                         Log.d(TAG, "onSuccess: error message : " + e.getMessage());
-                        callback.onUploadFailed(e.getMessage());
+                        if(callback!= null) {
+                            callback.onUploadFailed(e.getMessage());
+                        }
                     }
 
                 }

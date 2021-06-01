@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/call"
+        android:title="Call"
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/save_number"
+        android:title="Save Number"
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/add_to_block"
+        android:title="Add to block "
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/add_to_spam"
+        android:title="Add as spam"
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/all_history"
+        android:title="All History"
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/delete"
+        android:title="Delete"
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/send_sms"
+        android:title="Send SMS"
+        tools:ignore="HardcodedText" />
+
+    <item android:id="@+id/exit"
+        android:title="Exit"
+        tools:ignore="HardcodedText" />
+
+</menu>

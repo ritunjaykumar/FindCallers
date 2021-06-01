@@ -80,7 +80,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
         return filter;
     }
 
-    private Filter filter = new Filter() {
+    private final Filter filter = new Filter() {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
 

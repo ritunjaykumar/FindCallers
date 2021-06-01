@@ -65,7 +65,7 @@
                         android:layout_alignParentBottom="true"
 
                         android:background="@android:color/transparent"
-                        android:tint="@color/primary_light"
+                        app:tint="@color/primary_light"
                         app:srcCompat="@drawable/ic_person_add" />
 
 

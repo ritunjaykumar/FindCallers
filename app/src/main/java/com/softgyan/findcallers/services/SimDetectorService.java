@@ -32,7 +32,7 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
     public static final String TASK_KEY = "taskKey";
     private boolean isServiceStarted = false;
     private final SimDetectorServiceBinder mServiceBinder = new SimDetectorServiceBinder();
-
+    private final static String STOP_SERVICE_ACTION = "com.softgyan.findcallers.STOP_SERVICE_ACTION";
     private String firstNumber;
     private String secondNumber;
     private String defaultMessage;
@@ -50,7 +50,9 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
         super.onCreate();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_TIME_TICK);
+        filter.addAction(STOP_SERVICE_ACTION);
         registerReceiver(tickBroadcastReceiver, filter);
+
         Log.d(TAG, "onCreate: called");
     }
 
@@ -61,7 +63,7 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
         this.startId = startId;
         this.mIntent = intent;
         backgroundThread.start();
-        Log.d(TAG, "onStartCommand: onStartCommand");
+        Log.d(TAG, "onStartCommand: onStartCommand startId : " + startId);
         return START_NOT_STICKY;
     }
 
@@ -154,6 +156,8 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
                 } else if (taskKey == SEND_MESSAGE_TASK) {
                     if (sendMessageList.size() != 0) {
                         CallUtils.sendMessage(getApplicationContext(), defaultMessage, sendMessageList);
+                    }else{
+                        Log.d(TAG, "run: no sim changed");
                     }
                 } else if (taskKey == STOP_SERVICE_TASK) {
                     stopSelf();
@@ -168,15 +172,17 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
     private final BroadcastReceiver tickBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "onReceive: tick broadcast received");
-            int taskValue = intent.getIntExtra(TASK_KEY, -1);
-            if (taskValue == STOP_SERVICE_TASK) {
-                mIntent.putExtra(TASK_KEY, taskValue);
-            } else {
+            Log.d(TAG, "onReceive: tick broadcast received action : " + intent.getAction());
+            String currentAction = intent.getAction();
+            if (STOP_SERVICE_ACTION.equals(currentAction)) {
+                mIntent.putExtra(TASK_KEY, STOP_SERVICE_TASK);
+                Log.d(TAG, "onReceive: stop service called");
+            } else if (Intent.ACTION_TIME_TICK.equals(currentAction)) {
                 mIntent.putExtra(TASK_KEY, CHECK_SIM_STATUS_TASK);
             }
         }
     };
+
 
     public void stopSimDetectorService() {
         mIntent.putExtra(TASK_KEY, STOP_SERVICE_TASK);

@@ -2,6 +2,7 @@ package com.softgyan.findcallers.widgets.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +10,8 @@ import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
+import com.softgyan.findcallers.hardware.CallHardware;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallNumberModel;
 import com.softgyan.findcallers.utils.CallUtils;
@@ -109,11 +111,11 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
         holder.tvDate.setText(callNumber.getDate().toString().substring(0, 10));
 
 
-//        holder.ibMoreInfo.setOnClickListener(v -> onItemClicked(holder.itemView, callModel, position));
+        holder.ibMoreInfo.setOnClickListener(v -> onItemClicked(holder.itemView, callModel, position));
 
         holder.itemView.setOnClickListener(v -> {
-//            CallHardwareInfo.initiatingCall(mContext, callModel.getNumber()
-            Toast.makeText(mContext, "size : " + callModel.getCallNumberList().size(), Toast.LENGTH_SHORT).show();
+            CallHardware.makeCall(mContext, callModel.getCallNumberList().get(0).getNumber());
+
         });
 
     }
@@ -146,15 +148,15 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
         protected FilterResults performFiltering(CharSequence constraint) {
 
             final List<CallModel> userInfoModelListFiltered = new ArrayList<>();
-            /*if (constraint == null || constraint.toString().isEmpty()) {
+            if (constraint == null || constraint.toString().isEmpty()) {
                 userInfoModelListFiltered.addAll(callModelListBackup);
             } else {
                 for (CallModel model : callModelListBackup) {
-                    if (model.getNumber().contains(constraint.toString())) {
+                    if (model.getCallNumberList().get(0).getNumber().contains(constraint.toString())) {
                         userInfoModelListFiltered.add(model);
                     }
                 }
-            }*/
+            }
             FilterResults filterResults = new FilterResults();
             filterResults.values = userInfoModelListFiltered;
 
@@ -171,44 +173,44 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
     };
 
 
-//    private void onItemClicked(final View itemView, final CallModel callModel, final int position) {
-//        PopupMenu popupMenu = new PopupMenu(mContext, itemView);
-//        popupMenu.inflate(R.menu.options_call_history_menu);
-//        popupMenu.setGravity(Gravity.END);
-//        if (flag) {
-//            popupMenu.getMenu().findItem(R.id.all_history).setVisible(false);
-//            popupMenu.getMenu().findItem(R.id.save_number).setVisible(false);
-//            popupMenu.getMenu().findItem(R.id.call).setVisible(false);
-//            popupMenu.getMenu().findItem(R.id.add_to_block).setVisible(false);
-//            popupMenu.getMenu().findItem(R.id.add_to_spam).setVisible(false);
-//            popupMenu.getMenu().findItem(R.id.send_sms).setVisible(false);
-//        }
-//        popupMenu.setOnMenuItemClickListener(item -> {
-//            final int id = item.getItemId();
-//            if (id == R.id.call) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.CALL);
-//            } else if (id == R.id.save_number) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.SAVE_NUMBER);
-//            } else if (id == R.id.add_to_block) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.ADD_TO_BLOCK);
-//            } else if (id == R.id.add_to_spam) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.ADD_TO_SPAM);
-//            } else if (id == R.id.all_history) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.ALL_HISTORY);
-//            } else if (id == R.id.delete) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.DELETE);
-//            } else if (id == R.id.send_sms) {
-//                logCallback.onClickMoreOption(callModel, position, CallLogCallback.SEND_SMS);
-//            } else if (id == R.id.exit) {
-//                popupMenu.dismiss();
-//            } else {
-//                return false;
-//            }
-//            return true;
-//        });
-//        popupMenu.show();
-//        logCallback.onClickItemView();
-//    }
+    private void onItemClicked(final View itemView, final CallModel callModel, final int position) {
+        PopupMenu popupMenu = new PopupMenu(mContext, itemView);
+        popupMenu.inflate(R.menu.call_log_menu);
+        popupMenu.setGravity(Gravity.END);
+        if (flag) {
+            popupMenu.getMenu().findItem(R.id.all_history).setVisible(false);
+            popupMenu.getMenu().findItem(R.id.save_number).setVisible(false);
+            popupMenu.getMenu().findItem(R.id.call).setVisible(false);
+            popupMenu.getMenu().findItem(R.id.add_to_block).setVisible(false);
+            popupMenu.getMenu().findItem(R.id.add_to_spam).setVisible(false);
+            popupMenu.getMenu().findItem(R.id.send_sms).setVisible(false);
+        }
+        popupMenu.setOnMenuItemClickListener(item -> {
+            final int id = item.getItemId();
+            if (id == R.id.call) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.CALL);
+            } else if (id == R.id.save_number) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.SAVE_NUMBER);
+            } else if (id == R.id.add_to_block) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.ADD_TO_BLOCK);
+            } else if (id == R.id.add_to_spam) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.ADD_TO_SPAM);
+            } else if (id == R.id.all_history) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.ALL_HISTORY);
+            } else if (id == R.id.delete) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.DELETE);
+            } else if (id == R.id.send_sms) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.SEND_SMS);
+            } else if (id == R.id.exit) {
+                popupMenu.dismiss();
+            } else {
+                return false;
+            }
+            return true;
+        });
+        popupMenu.show();
+        logCallback.onClickItemView();
+    }
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

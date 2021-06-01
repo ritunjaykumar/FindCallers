@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpFragmentAdapter() {
         fragmentAdapter = new FragmentAdapter(getSupportFragmentManager());
-        fragmentAdapter.addFragment(CallFragment.getInstance(), getString(R.string.phone));
+        fragmentAdapter.addFragment(CallFragment.getInstance(this), getString(R.string.phone));
         fragmentAdapter.addFragment(ContactFragment.getInstance(), getString(R.string.contact));
         viewPager.setAdapter(fragmentAdapter);
         viewPager.addOnPageChangeListener(callback);
