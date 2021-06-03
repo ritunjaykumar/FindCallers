@@ -156,7 +156,7 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
                 } else if (taskKey == SEND_MESSAGE_TASK) {
                     if (sendMessageList.size() != 0) {
                         CallUtils.sendMessage(getApplicationContext(), defaultMessage, sendMessageList);
-                    }else{
+                    } else {
                         Log.d(TAG, "run: no sim changed");
                     }
                 } else if (taskKey == STOP_SERVICE_TASK) {
@@ -175,10 +175,12 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
             Log.d(TAG, "onReceive: tick broadcast received action : " + intent.getAction());
             String currentAction = intent.getAction();
             if (STOP_SERVICE_ACTION.equals(currentAction)) {
-                mIntent.putExtra(TASK_KEY, STOP_SERVICE_TASK);
+                if (mIntent != null)
+                    mIntent.putExtra(TASK_KEY, STOP_SERVICE_TASK);
                 Log.d(TAG, "onReceive: stop service called");
             } else if (Intent.ACTION_TIME_TICK.equals(currentAction)) {
-                mIntent.putExtra(TASK_KEY, CHECK_SIM_STATUS_TASK);
+                if (mIntent != null)
+                    mIntent.putExtra(TASK_KEY, CHECK_SIM_STATUS_TASK);
             }
         }
     };

@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             app:tabBackground="@color/colorPrimary"
             app:tabGravity="fill"
+
             app:tabIndicatorColor="@color/accent"
             app:tabIndicatorHeight="3dp"
             app:tabRippleColor="@color/primary_light"
@@ -31,6 +32,7 @@
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewPager"
+            android:background="@color/white"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </LinearLayout>

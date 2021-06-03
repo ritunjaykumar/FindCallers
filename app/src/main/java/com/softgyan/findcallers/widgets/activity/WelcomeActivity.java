@@ -115,8 +115,8 @@ public class WelcomeActivity extends AppCompatActivity {
             GettingContactBackgroundWork backgroundWork = new GettingContactBackgroundWork(this);
             backgroundWork.execute();
             Log.d(TAG, "savingDetails: part_2");
-           /* GettingCallLogBackgroundWork callWork = new GettingCallLogBackgroundWork(this);
-            callWork.execute();*/
+            GettingCallLogBackgroundWork callWork = new GettingCallLogBackgroundWork(this);
+            callWork.execute();
         } catch (Exception e) {
             Log.d(TAG, "savingDetails: " + e.getMessage());
         }
@@ -154,9 +154,9 @@ public class WelcomeActivity extends AppCompatActivity {
             //debugging here remove comment
             SavingBackgroundWork backgroundWork = new SavingBackgroundWork(context);
             backgroundWork.execute(contactModels);
-//            for (ContactModel contactModel : contactModels) {
-//                Log.d(TAG, "onPostExecute: contactModel : " + contactModel.toString());
-//            }
+            for (ContactModel contactModel : contactModels) {
+                Log.d(TAG, "onPostExecute: contactModel : " + contactModel.toString());
+            }
 
             Log.d(TAG, "onPostExecute: listSize : " + SystemContacts.uploadContactList.size());
             new Handler().postDelayed(() -> {
@@ -274,9 +274,13 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private static void openMainActivity(Context context) {
+        Log.d(TAG, "openMainActivity: start account activity"+ callFlag + " "+contactFlag);
         if (callFlag && contactFlag) {
             AppPreference.setWelcomeActivity(context, true);
-            Utils.openActivity(context, MainActivity.class, true);
+            Intent intent = new Intent(context, UserAccountSettingActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra(UserAccountSettingActivity.IS_SAVE_DATA, true);
+            context.startActivity(intent);
         }
     }
 

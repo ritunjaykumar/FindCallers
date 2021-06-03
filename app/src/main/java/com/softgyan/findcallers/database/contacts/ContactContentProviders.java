@@ -99,7 +99,28 @@ public class ContactContentProviders extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        // Implement this to handle requests to delete one or more rows.
+        final int match = sUriMatcher.match(uri);
+        final SQLiteDatabase database = contactHelper.getWritableDatabase();
+        switch (match) {
+            case MOBILE_ID: {
+                int id = (int) ContentUris.parseId(uri);
+                selection = ContactsDetails.COLUMN_MOBILE_ID + "=?";
+                selectionArgs = new String[]{String.valueOf(id)};
+                return database.delete(ContactsDetails.MOBILE_NUMBER_TABLE, selection, selectionArgs);
+            }
+            case MOBILE: {
+                return database.delete(ContactsDetails.MOBILE_NUMBER_TABLE, selection, selectionArgs);
+            }
+            case USER: {
+                return database.delete(ContactsDetails.TABLE_NAME, selection, selectionArgs);
+            }
+            case USER_ID: {
+                int id = (int) ContentUris.parseId(uri);
+                selection = ContactsDetails.COLUMN_USER_ID + "=?";
+                selectionArgs = new String[]{String.valueOf(id)};
+                return database.delete(ContactsDetails.TABLE_NAME, selection, selectionArgs);
+            }
+        }
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -146,7 +167,17 @@ public class ContactContentProviders extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        int match = sUriMatcher.match(uri);
+        final SQLiteDatabase database = contactHelper.getWritableDatabase();
+        switch (match) {
+            case USER_ID: {
+                long id = ContentUris.parseId(uri);
+                selection = ContactsDetails.COLUMN_USER_ID + "=?";
+                selectionArgs = new String[]{String.valueOf(id)};
+                return database.update(ContactsDetails.TABLE_NAME, values, selection, selectionArgs);
+
+            }
+        }
+        throw new UnsupportedOperationException("invalid uri : " + uri);
     }
 }

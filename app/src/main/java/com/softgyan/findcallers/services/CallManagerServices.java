@@ -216,7 +216,6 @@ public class CallManagerServices extends Service {
                         mContactModel = contactModel;
                         callerInfoModels = Utils.getCallerInfoModel(contactModel);
                         showDialogOverCall(callerInfoModels, false);
-
                     }
 
                     @Override
@@ -241,25 +240,36 @@ public class CallManagerServices extends Service {
         if (lastCallHistory == null) {
             return;
         }
-        Log.d(TAG, "saveLastCallHistory: searched number : "+mContactModel);
+        Log.d(TAG, "saveLastCallHistory: searched number : " + mContactModel);
 
         final CallModel callModel = CallQuery.searchCallHistoryByNumber(context, number);
         Log.d(TAG, "saveLastCallHistory: searched number from Local : " + callModel);
         if (callModel != null) {
-            CallNumberModel callNumberModel = lastCallHistory.getFirstCall();
-            callNumberModel.setNameRefId(callModel.getNameId());
-            final int i = CallQuery.insertCallNumberLog(getApplicationContext(), callNumberModel);
-            if (i == 0) Log.d(TAG, "saveLastCallHistory: number not save : " + callNumberModel);
-            else Log.d(TAG, "saveLastCallHistory: number save : " + callNumberModel);
+
+            CallNumberModel lastCallNumberModel = lastCallHistory.getFirstCall();
+            lastCallNumberModel.setNameRefId(callModel.getNameId());
+            final int i = CallQuery.insertCallNumberLog(getApplicationContext(), lastCallNumberModel);
+            if (i == 0) {
+                Log.d(TAG, "saveLastCallHistory: number not save : " + lastCallNumberModel);
+                lastCallNumberModel.setCallModelId(i);
+                Utils.setCallLogToList(lastCallHistory);
+            } else {
+                Log.d(TAG, "saveLastCallHistory: number save : " + lastCallNumberModel);
+            }
         } else {
             if (mContactModel != null) {
                 String name = mContactModel.getName();
                 if (lastCallHistory.getCacheName() == null) {
                     lastCallHistory.setCacheName(name);
                 }
+            } else {
+                lastCallHistory.setCacheName("unknown_" + number);
             }
             CallQuery.insertCallLog(getApplicationContext(), lastCallHistory);
+            Log.d(TAG, "saveLastCallHistory: after save operation : " + lastCallHistory);
+
         }
+        Utils.setCallLogToList(lastCallHistory);
     }
 
     private final BroadcastReceiver bReceiver = new BroadcastReceiver() {

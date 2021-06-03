@@ -27,7 +27,7 @@ import java.util.List;
 public class ContactFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = ContactFragment.class.getName();
-    private final List<ContactModel> contactList = new ArrayList<>(CommVar.contactsList);
+    private final List<ContactModel> contactList =CommVar.contactsList;
     private RecyclerView recyclerView;
     private EditText etSearchView;
     private ContactsAdapter contactsAdapter;

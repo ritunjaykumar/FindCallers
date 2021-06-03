@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -72,6 +73,7 @@ public final class CallQuery {
         return CALL_NUMBER_MODEL_LIST;
     }
 
+
     public synchronized static int insertCallNumberLog(@Nullable Context context, final CallNumberModel callNumberModel) {
         if (context != null) {
             ContentValues values = getContentValues(callNumberModel);
@@ -102,9 +104,9 @@ public final class CallQuery {
                 final int callResult = insertCallNumberLog(context, numberModel);
                 if (callResult > -1) {
                     numberModel.setCallModelId(callResult);
-//                    Log.d(TAG, "insertCacheName: inserted : " + numberModel);
+                    Log.d(TAG, "insertCacheName: inserted : " + numberModel);
                 } else {
-//                    Log.d(TAG, "insertCacheName: not inserted : " + numberModel);
+                    Log.d(TAG, "insertCacheName: not inserted : " + numberModel);
                 }
             }
         }
@@ -123,22 +125,72 @@ public final class CallQuery {
 
     }
 
+    public static synchronized int getNumberTableSize(Context context, int nameRefId) {
+        if (context == null) return -1;
+        String selection = " WHERE " + CallDetails.CALL_COLUMN_NAME_REF_ID + " =?";
+        String[] selectionArg = new String[]{String.valueOf(nameRefId)};
 
-    public synchronized static int deleteSingleCallLog(@Nullable Context context, final int id) {
+        final Cursor query = context.getContentResolver().query(CallDetails.CONTENT_CALL_URI, null, selection, selectionArg, null);
+        int size = query.getCount();
+        query.close();
+        return size;
+
+    }
+
+
+    public synchronized static int deleteSingleCallLog(@Nullable Context context, final int callColumnId, int nameRefId) {
         if (context == null) {
             return 0;
         }
-        return context.getContentResolver().delete(ContentUris.withAppendedId(CallDetails.CONTENT_CALL_URI, id),
+        boolean flag = false;
+        if (getNumberTableSize(context, nameRefId) == 1) {
+            flag = true;
+        }
+        final int delete = context.getContentResolver().delete(ContentUris.withAppendedId(CallDetails.CONTENT_CALL_URI, callColumnId),
+                null, null);
+
+        if (flag) {
+            final int i = deleteCacheNameTable(context, nameRefId);
+            if (i != 0) {
+                Log.d(TAG, "deleteSingleCallLog: deleted");
+            } else {
+                Log.d(TAG, "deleteSingleCallLog: not delete");
+            }
+        }
+        return delete;
+
+    }
+
+    public synchronized static int deleteAllCallLog(@Nullable Context context, int nameRefId) {
+        if (context == null) {
+            return 0;
+        }
+        String selection = CallDetails.CALL_COLUMN_NAME_REF_ID + " =?";
+        String[] selectionArgs = new String[]{String.valueOf(nameRefId)};
+        final int delete = context.getContentResolver().delete(CallDetails.CONTENT_CALL_URI, selection, selectionArgs);
+        if (delete > 0) {
+            final int i = deleteCacheNameTable(context, nameRefId);
+            if (i != 0) {
+                Log.d(TAG, "deleteAllCallLog: deleted");
+                return delete;
+            }
+        }
+        return -1;
+
+    }
+
+    private static synchronized int deleteCacheNameTable(Context context, int id) {
+        if (context == null)
+            return -1;
+        return context.getContentResolver().delete(ContentUris.withAppendedId(CallDetails.CONTENT_CACHE_NAME_URI, id),
                 null, null);
     }
 
-    public synchronized static int deleteAllCallLog(@Nullable Context context, @NonNull String number) {
+    public synchronized int deleteAllCacheNameTable(Context context) {
         if (context == null) {
-            return 0;
+            return 1;
         }
-        String selection = CallDetails.CALL_COLUMN_NUMBER + " =?";
-        String[] selectionArgs = new String[]{number};
-        return context.getContentResolver().delete(CallDetails.CONTENT_CALL_URI, selection, selectionArgs);
+        return context.getContentResolver().delete(CallDetails.CONTENT_CALL_URI, null, null);
     }
 
     public synchronized static CallModel searchCallHistoryByNumber(Context context, final String number) {

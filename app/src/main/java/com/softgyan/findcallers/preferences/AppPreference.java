@@ -16,6 +16,17 @@ public final class AppPreference {
         return sharedPref.edit();
     }
 
+
+    private static final String ACCOUNT_ACTIVITY_SET_KEY = "AccountActivitySetKey";
+
+    public static synchronized void setAccountActivitySet(Context context, boolean accountActivitySet) {
+        getSharedEditor(context).putBoolean(ACCOUNT_ACTIVITY_SET_KEY, accountActivitySet).apply();
+    }
+
+    public static synchronized boolean isAccountActivitySet(Context context) {
+        return getSharedPref(context).getBoolean(ACCOUNT_ACTIVITY_SET_KEY, false);
+    }
+
     synchronized public static boolean isWelcomeActivitySet(Context context) {
         return getSharedPref(context).getBoolean(IS_START_FIRST_TIME, false);
     }
@@ -87,6 +98,11 @@ public final class AppPreference {
             return getSharedPref(context).getString(SECOND_NUMBER_KEY, null);
         }
 
+    }
+
+
+    public static synchronized void clearPreference(Context context) {
+        getSharedEditor(context).clear().apply();
     }
 
 

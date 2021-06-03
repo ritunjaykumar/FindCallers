@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -186,5 +185,27 @@ public class ContactsQuery {
         model.setTag(cursor.getString(cursor.getColumnIndex(ContactsDetails.COLUMN_USER_TAG)));
         return model;
     }
+
+    public static synchronized int updateContactValue(Context context, ContentValues cValues, int id) {
+        return context.getContentResolver().update(ContentUris.withAppendedId(ContactsDetails.CONTENT_USER_URI, id), cValues, null, null);
+    }
+
+
+    public static synchronized int deleteSingleContact(Context context, int contactId) {
+        if (deleteContactNumberByRefId(context, contactId) > 0) {
+            return context.getContentResolver().delete(ContentUris.withAppendedId(ContactsDetails.CONTENT_USER_URI,
+                    contactId), null, null);
+        }
+        return -1;
+    }
+
+    private static synchronized int deleteContactNumberByRefId(Context context, int userRefId) {
+        if (context == null) return -1;
+
+        String selection = ContactsDetails.COLUMN_USER_REF_ID + "=?";
+        String[] selectionArgs = {String.valueOf(userRefId)};
+        return context.getContentResolver().delete(ContactsDetails.CONTENT_MOBILE_URI, selection, selectionArgs);
+    }
+
 
 }

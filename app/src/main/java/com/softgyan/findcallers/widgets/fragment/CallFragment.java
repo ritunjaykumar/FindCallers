@@ -20,6 +20,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.contacts.system.SystemContacts;
+import com.softgyan.findcallers.database.query.CallQuery;
 import com.softgyan.findcallers.database.query.SpamQuery;
 import com.softgyan.findcallers.database.spam.SpamContract;
 import com.softgyan.findcallers.firebase.FirebaseDB;
@@ -36,7 +37,6 @@ import com.softgyan.findcallers.widgets.adapter.CallLogAdapter;
 import com.softgyan.findcallers.widgets.dialog.DialingPadBehavior;
 import com.softgyan.findcallers.widgets.dialog.InputDialog;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,12 +45,11 @@ public class CallFragment extends Fragment {
     private static final String TAG = "CallFragment";
 
     private CallLogAdapter callAdapter;
-    private final List<CallModel> callList = new ArrayList<>(CommVar.callList);
+    private final List<CallModel> callList = CommVar.callList;
     private FloatingActionButton fabHideShow;
     private BottomSheetBehavior<View> sheetBehavior;
-    private DialingPadBehavior dialingPadBehavior;
     private RecyclerView recyclerView;
-    private Context context;
+    private final Context context;
 
     public CallFragment(Context context) {
         // Required empty public constructor
@@ -114,13 +113,7 @@ public class CallFragment extends Fragment {
                     break;
                 }
                 case (CallLogAdapter.CallLogCallback.DELETE): {
-//                    final int i = FindCallerQuery.deleteSingleCallLog(getContext(), callModel.getId());
-//                    if (i == 1) {
-//                        Toast.makeText(getContext(), "deleted", Toast.LENGTH_SHORT).show();
-//                    } else {
-//                        Toas t.makeText(getContext(), "failed", Toast.LENGTH_SHORT).show();
-//                    }
-//                    deleteFromList(callModel);
+                    deleteCAllHistory(callModel);
                     break;
                 }
                 case (CallLogAdapter.CallLogCallback.SAVE_NUMBER): {
@@ -149,6 +142,14 @@ public class CallFragment extends Fragment {
             hideBehavior();
         }
     };
+
+    private void deleteCAllHistory(CallModel callModel) {
+        final int i = CallQuery.deleteAllCallLog(context, callModel.getNameId());
+        if (i > 0) {
+            callList.removeIf(cModel -> cModel.getNameId() == callModel.getNameId());
+            callAdapter.notifyDataSetChanged();
+        }
+    }
 
 
     private void insertSpamOrBlock(CallModel callModel, boolean isSpam) {
@@ -189,7 +190,7 @@ public class CallFragment extends Fragment {
     }
 
     private void setupBottomSheetBehavior(CardView cardView) {
-        dialingPadBehavior = new DialingPadBehavior(requireContext(), cardView, dialing);
+        DialingPadBehavior dialingPadBehavior = new DialingPadBehavior(requireContext(), cardView, dialing);
         sheetBehavior = dialingPadBehavior.getBottomSheetBehavior();
     }
 

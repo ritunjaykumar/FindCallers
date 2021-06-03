@@ -1,5 +1,8 @@
 package com.softgyan.findcallers.models;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 public final class UserInfoModel {
     private String userName;
     private String userEmail;
@@ -7,6 +10,8 @@ public final class UserInfoModel {
     private String userTag;
     private boolean emailVerify;
     private String userAddress;
+    private String accountMobileNumber;
+    private static UserInfoModel mModel;
 
     private UserInfoModel(String userName, String userEmail, String userProfile, String userTag,
                           boolean emailVerify, String userAddress) {
@@ -16,6 +21,17 @@ public final class UserInfoModel {
         this.userTag = userTag;
         this.emailVerify = emailVerify;
         this.userAddress = userAddress;
+        final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null)
+            this.accountMobileNumber = currentUser.getPhoneNumber();
+        else
+            accountMobileNumber = null;
+    }
+
+    private UserInfoModel(String userName, String userEmail, String userProfile, String userTag,
+                          boolean emailVerify, String userAddress, String accountMobileNumber) {
+        this(userName, userEmail, userProfile, userTag, emailVerify, userAddress);
+        this.accountMobileNumber = accountMobileNumber;
     }
 
     public String getUserName() {
@@ -66,6 +82,10 @@ public final class UserInfoModel {
         this.userAddress = userAddress;
     }
 
+    public String getAccountMobileNumber() {
+        return accountMobileNumber;
+    }
+
     @Override
     public String toString() {
         return "UserInfoModel{" +
@@ -75,11 +95,29 @@ public final class UserInfoModel {
                 ", userTag='" + userTag + '\'' +
                 ", emailVerify=" + emailVerify +
                 ", userAddress='" + userAddress + '\'' +
+                ", accountMobileNumber='" + accountMobileNumber + '\'' +
                 '}';
     }
 
     public static UserInfoModel getInstance(String userName, String userEmail, String userProfile,
-                                            String userTag, boolean isEmailVerify, String userAddress) {
-        return new UserInfoModel(userName, userEmail, userProfile, userTag, isEmailVerify, userAddress);
+                                            String userTag, boolean isEmailVerify, String userAddress,
+                                            String accountMobileNumber) {
+
+        if (mModel == null) {
+            mModel = new UserInfoModel(userName, userEmail, userProfile, userTag, isEmailVerify,
+                    userAddress, accountMobileNumber);
+        }
+        return mModel;
     }
+
+    public static UserInfoModel getInstance(String userName, String userEmail, String userProfile,
+                                            String userTag, boolean isEmailVerify, String userAddress) {
+
+        if (mModel == null) {
+            mModel = new UserInfoModel(userName, userEmail, userProfile, userTag, isEmailVerify, userAddress);
+        }
+        return mModel;
+    }
+
+
 }

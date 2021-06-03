@@ -67,7 +67,7 @@ public class AllCallHistoryActivity extends AppCompatActivity {
 
         setRecyclerView();
 
-        Log.d(TAG, "onCreate: callModel : "+mCallModel);
+        Log.d(TAG, "onCreate: callModel : " + mCallModel);
     }
 
     private void onChangeRadio(int id) {
@@ -101,13 +101,23 @@ public class AllCallHistoryActivity extends AppCompatActivity {
     private void setRecyclerView() {
 
         callLogAdapter = new AllCallNumberAdapter(callNumberModels, this, mCallModel.getCacheName(), (callModel, position) -> {
-            final int i = CallQuery.deleteSingleCallLog(AllCallHistoryActivity.this, callModel.getCallModelId());
+            final int i = CallQuery.deleteSingleCallLog(AllCallHistoryActivity.this, callModel.getCallModelId(), callModel.getNameRefId());
             if (i != 0) {
                 final boolean remove = callNumberModels.remove(callModel);
                 Log.d(TAG, "onDeleteCall: is removed from callNumberModel : " + remove);
                 final boolean remove1 = mCallModel.getCallNumberList().remove(callModel);
                 Log.d(TAG, "onDeleteCall: is removed from callModel :" + remove1);
-                callLogAdapter.notifyItemRemoved(position);
+
+                for (CallModel callModel1 : CommVar.callList) {
+                    if (callModel1.getNameId() == mCallModel.getNameId()) {
+                        final List<CallNumberModel> callNumberList = callModel1.getCallNumberList();
+                        final boolean b = callNumberList.removeIf(numberModel -> numberModel.getCallModelId() == callModel.getCallModelId());
+                        Log.d(TAG, "setRecyclerView: is deleted : "+b);
+                        break;
+                    }
+                }
+
+                invalidateOptionsMenu();
                 refreshLayout();
             }
         });
@@ -134,12 +144,13 @@ public class AllCallHistoryActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.delete_menu, menu);
         if (callNumberModels != null) {
-            final MenuItem item = menu.getItem(0);
+            final MenuItem item = menu.findItem(R.id.menu_delete);
             item.setTitle(String.valueOf(callNumberModels.size()));
             item.setVisible(true);
         } else {
-            menu.getItem(0).setVisible(false);
+            menu.findItem(R.id.menu_delete).setVisible(false);
         }
+        Log.d(TAG, "onCreateOptionsMenu: called");
 
         return super.onCreateOptionsMenu(menu);
     }

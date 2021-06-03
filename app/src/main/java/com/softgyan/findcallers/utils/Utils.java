@@ -6,31 +6,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.PixelFormat;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.LinearLayout;
-import android.widget.TextView;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.bumptech.glide.Glide;
-import com.google.android.material.imageview.ShapeableImageView;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.query.ContactsQuery;
-import com.softgyan.findcallers.hardware.CallHardware;
+import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.models.ContactNumberModel;
@@ -63,6 +56,12 @@ public final class Utils {
     public static String getUniqueId() {
         UUID uuid = UUID.randomUUID();
         return uuid.toString();
+    }
+
+    public static String getUriExtension(Context context, Uri uri) {
+        ContentResolver contentResolver = context.getContentResolver();
+        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
     }
 
     public static void hideViews(View... views) {
@@ -184,94 +183,6 @@ public final class Utils {
         return count;
     }
 
-    /**
-     * @param context         can't be null
-     * @param callerInfoModel only user info to show
-     */
-
-    public static void showDialogOverCall(final Context context, CallerInfoModel callerInfoModel,
-                                          boolean isViewUpdate) {
-        //todo isViewUpdate
-        /*checking permission for showing dialog*/
-
-        Log.d(TAG, "showDialogOverCall: isViewUpdate : " + isViewUpdate);
-
-        if (requestOverlayPermission(context)) return;
-        if (callerInfoModel == null) return;
-        Log.d(TAG, "showDialogOverCall: caller info details : " + callerInfoModel);
-        WindowManager windowManager;
-        WindowManager.LayoutParams params;
-        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        int flags;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flags = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        } else {
-            flags = WindowManager.LayoutParams.TYPE_PHONE;
-        }
-        int layoutParams = flags;
-
-
-        View view = layoutInflater.inflate(R.layout.layout_caller_info, null);
-
-        int wmFlag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-
-        params = new WindowManager.LayoutParams(
-                WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                layoutParams,
-                wmFlag,
-                PixelFormat.TRANSLUCENT
-        );
-
-        if (isViewUpdate) {
-            LinearLayout linearLayout = view.findViewById(R.id.llOptionContainer);
-            showViews(linearLayout);
-        }
-
-        if (!isNull(callerInfoModel.getMessage())) {
-            TextView tvMessage = view.findViewById(R.id.tvNotification);
-            tvMessage.setText(callerInfoModel.getMessage());
-            showViews(tvMessage);
-        }
-
-
-        view.findViewById(R.id.ibClose).setOnClickListener(v -> {
-            windowManager.removeView(view);
-
-        });
-        view.findViewById(R.id.tvCall).setOnClickListener(v -> {
-            CallHardware.makeCall(context, callerInfoModel.getNumber());
-
-        });
-        TextView tvName = view.findViewById(R.id.tvName);
-        if (!isNull(callerInfoModel.getName())) {
-            tvName.setText(callerInfoModel.getName());
-        } else {
-            tvName.setText("unknown Caller");
-        }
-        if (!isNull(callerInfoModel.getProfileUri())) {
-            ShapeableImageView ivProfile = view.findViewById(R.id.sivProfile);
-            Glide.with(context).load(callerInfoModel.getProfileUri()).into(ivProfile);
-        }
-
-        TextView tvNumber = view.findViewById(R.id.tvNumber);
-        tvNumber.setText(callerInfoModel.getNumber());
-
-
-        if (isViewUpdate) {
-            try {
-                windowManager.removeView(view);
-                windowManager.addView(view, params);
-            } catch (Exception e) {
-                Log.d(TAG, "showDialogOverCall: error : " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            windowManager.addView(view, params);
-        }
-    }
 
     public synchronized static List<HashMap<String, Object>> getAllContactForBackup(Context context) {
         if (context == null) return null;
@@ -309,7 +220,7 @@ public final class Utils {
             return contactModel;
         }
         if (checkPermission(context, Manifest.permission.READ_CONTACTS)) {
-           return searchNumberFromSystem(context, mobileNumber);
+            return searchNumberFromSystem(context, mobileNumber);
 
         }
         return null;
@@ -362,6 +273,11 @@ public final class Utils {
         );
     }
 
+    /**
+     *
+     * @param context can't be null
+     * @return if connection available return true otherwise false;
+     */
     public static boolean isInternetConnectionAvailable(Context context) {
         boolean isConnected = false;
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -375,4 +291,63 @@ public final class Utils {
         }
         return isConnected;
     }
+
+
+    public static synchronized void setCallLogToList(CallModel callModel) {
+        final List<CallModel> callList = CommVar.callList;
+        Log.d(TAG, "setCallLogToList: size : " + callList.size());
+        if (callList.size() == 0) {
+            return;
+        }
+        CallModel tempCallModel = null;
+        boolean isFind = false;
+        for (CallModel cModel : callList) {
+            if (cModel.getNameId() == callModel.getNameId()) {
+                cModel.addNumberAtTop(callModel.getCallNumberList().get(0));
+                isFind = true;
+                tempCallModel = cModel;
+                break;
+            }
+        }
+        if (isFind) {
+            callList.remove(tempCallModel);
+            callList.add(0, tempCallModel);
+        } else {
+            callList.add(0, callModel);
+        }
+
+    }
+
+
+    public static synchronized void setContactToList(final ContactModel contactModel) {
+        final List<ContactModel> contactsList = CommVar.contactsList;
+        if (contactsList.size() == 0) return;
+        ContactModel tempContactModel = null;
+        boolean isFind = false;
+        int location = -1;
+        for (ContactModel cModel : contactsList) {
+            if (cModel.getId() == contactModel.getId()) {
+                tempContactModel = cModel;
+                location++;
+                isFind = true;
+                break;
+            }
+        }
+        Log.d(TAG, "setContactToList: isFind : " + isFind);
+        Log.d(TAG, "setContactToList: location : " + location);
+        if (isFind) {
+            tempContactModel.setName(contactModel.getName());
+            tempContactModel.setAddress(contactModel.getAddress());
+            tempContactModel.setEmailId(contactModel.getEmailId());
+            tempContactModel.setImage(contactModel.getImage());
+            tempContactModel.setTag(contactModel.getTag());
+            tempContactModel.updateContactNumber(contactModel.getContactNumbers());
+            contactsList.set(location, tempContactModel);
+        } else {
+            contactsList.add(contactModel);
+        }
+
+
+    }
+
 }

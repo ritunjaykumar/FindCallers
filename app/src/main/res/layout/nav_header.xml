@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/primary_light"
     android:orientation="vertical">
 
     <com.google.android.material.imageview.ShapeableImageView
@@ -45,13 +46,13 @@
         android:layout_centerHorizontal="true"
         android:layout_gravity="center_horizontal"
         android:drawablePadding="4dp"
-        android:letterSpacing="0.09"
         android:padding="2dp"
+        android:ellipsize="end"
+        android:lines="1"
         android:text="email id"
         android:textColor="@color/colorPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:drawableEndCompat="@drawable/ic_verify"
         tools:ignore="HardcodedText" />
 
     <TextView
@@ -64,6 +65,7 @@
         android:text="good morning"
         android:textColor="@color/accent"
         android:textSize="18sp"
+        android:visibility="gone"
         tools:ignore="HardcodedText" />
 
 
@@ -73,7 +75,6 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_gravity="center_horizontal"
-        android:layout_margin="4dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="4dp"

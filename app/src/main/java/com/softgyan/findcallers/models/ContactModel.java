@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public final class ContactModel implements Serializable {
@@ -77,6 +78,10 @@ public final class ContactModel implements Serializable {
         this.tag = tag;
     }
 
+    public void updateContactNumber(Collection<ContactNumberModel> contactNumberList){
+        contactNumbers.clear();
+        contactNumbers.addAll(contactNumberList);
+    }
     public String getDefaultNumber() {
         return defaultNumber;
     }

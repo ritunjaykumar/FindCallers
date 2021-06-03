@@ -12,6 +12,8 @@ import android.util.Log;
 import com.softgyan.findcallers.database.call.CallContract.CallDetails;
 import com.softgyan.findcallers.utils.Utils;
 
+import java.util.Arrays;
+
 public class CallContentProvider extends ContentProvider {
 
     private static final int CACHE_NAME = 102;
@@ -49,6 +51,7 @@ public class CallContentProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         final int match = sUriMatcher.match(uri);
 
+        SQLiteDatabase database = callHelper.getWritableDatabase();
         switch (match) {
             case CALL_ID: {
                 int id = (int) ContentUris.parseId(uri);
@@ -59,6 +62,16 @@ public class CallContentProvider extends ContentProvider {
             case CALL: {
                 return deleteCallLog(selection, selectionArgs);
             }
+            case CACHE_NAME: {
+                return database.delete(CallDetails.CACHE_NAME_TABLE, selection, selectionArgs);
+            }
+            case CACHE_NAME_ID: {
+                int id = (int)ContentUris.parseId(uri);
+                selection = CallDetails.CACHE_NAME_ID + "=?";
+                selectionArgs = new String[]{String.valueOf(id)};
+                return database.delete(CallDetails.CACHE_NAME_TABLE, selection, selectionArgs);
+            }
+
             default: {
                 throw new UnsupportedOperationException("unable to delete for uri" + uri);
             }
@@ -108,21 +121,23 @@ public class CallContentProvider extends ContentProvider {
                         String[] selectionArgs, String sortOrder) {
         final int match = sUriMatcher.match(uri);
         SQLiteDatabase database = callHelper.getReadableDatabase();
+
         switch (match) {
 
             case CALL: {
 
+                Log.d(TAG, "query: selection : "+selection +" selectionArgs : "+ Arrays.toString(selectionArgs));
                 if (selection != null && selectionArgs != null) {
                     if (selectionArgs.length == Utils.getPlaceHolderCount(selection)) {
                         String sql = String.format("SELECT * FROM %s u INNER JOIN %s m ON u.%s = m.%s ",
                                 CallDetails.CACHE_NAME_TABLE, CallDetails.CALL_HISTORY_TABLE,
                                 CallDetails.CACHE_NAME_ID, CallDetails.CALL_COLUMN_NAME_REF_ID);
 
-                        sql = sql+ selection;
-                        Log.d(TAG, "query: sql : "+sql);
+                        sql = sql + selection;
+                        Log.d(TAG, "query: sql : " + sql);
                         return database.rawQuery(sql, selectionArgs);
                     }
-                    throw new UnsupportedOperationException("invalid query : " + uri.toString());
+                    throw new UnsupportedOperationException("invalid uri :" +uri);
                 }
 
 

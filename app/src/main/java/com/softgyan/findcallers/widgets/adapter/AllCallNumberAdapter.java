@@ -49,14 +49,13 @@ public class AllCallNumberAdapter extends RecyclerView.Adapter<AllCallNumberAdap
     @Override
     public void onBindViewHolder(@NonNull AllCallNumberAdapter.ViewHolder holder, int position) {
 
-        final CallNumberModel callNumber = callNumberList.get(0);
+        final CallNumberModel callNumber = callNumberList.get(position);
         if (callNumber == null) return;
         if (name != null) {
             holder.tvName.setText(name);
         } else {
             holder.tvName.setText("unknown_" + callNumber.getNumber());
         }
-        Log.d(TAG, "onBindViewHolder: call type : " + callNumber.getType());
         switch (callNumber.getType()) {
             case (CommVar.INCOMING_TYPE): {
                 changeColor(R.color.colorGreen, holder.tvName, holder.ivCallType);

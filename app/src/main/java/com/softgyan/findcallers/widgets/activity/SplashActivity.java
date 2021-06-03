@@ -20,18 +20,6 @@ public class SplashActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash);
         firebaseAuth = FirebaseAuth.getInstance();
 
-        /*
-            temp code remove it
-        final List<SimCardInfoModel> simInfoS = SimCardInfoModel.getSimInfoS(this);
-        if (simInfoS == null) {
-            Toast.makeText(this, "There are no sims detected", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String[] tempIccCode = new String[simInfoS.size()];
-        for (int i = 0; i < tempIccCode.length; i++) {
-            tempIccCode[i] = simInfoS.get(i).getIccId();
-        }
-        AppPreference.SimPreference.setSimIcc(this, tempIccCode);*/
         initComponent();
 
 
@@ -48,6 +36,9 @@ public class SplashActivity extends AppCompatActivity {
             intent = new Intent(this, AccountActivity.class);
         } else if (!AppPreference.isWelcomeActivitySet(this)) {
             intent = new Intent(this, WelcomeActivity.class);
+        } else if (!AppPreference.isAccountActivitySet(this)) {
+            intent = new Intent(this, UserAccountSettingActivity.class);
+            intent.putExtra(UserAccountSettingActivity.IS_SAVE_DATA, true);
         } else {
             intent = new Intent(this, MainActivity.class);
 

@@ -6,9 +6,10 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -16,11 +17,17 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.auth.FirebaseAuth;
 import com.softgyan.findcallers.R;
+import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.database.CommVar;
+import com.softgyan.findcallers.firebase.FirebaseDB;
+import com.softgyan.findcallers.models.UserInfoModel;
+import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.adapter.FragmentAdapter;
 import com.softgyan.findcallers.widgets.fragment.CallFragment;
@@ -32,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE = 1407;
     private DrawerLayout mDrawerLayout;
     private ViewPager viewPager;
-    private FragmentAdapter fragmentAdapter;
     private int mPosition = 0;
     private TabLayout tabLayout;
 
@@ -53,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: call list size : " + CommVar.callList.size());
         Log.d(TAG, "onCreate: contact list size : " + CommVar.contactsList.size());
         initNavigation(toolbar);
-        init();
+        initViewComponent();
         setUpFragmentAdapter();
     }
 
@@ -70,25 +76,17 @@ public class MainActivity extends AppCompatActivity {
     private void initNavigation(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.mainDrawer);
         NavigationView mNavigationView = findViewById(R.id.main_side_navigation_view);
-        LinearLayout mContentView = findViewById(R.id.contentViewLinearLayout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.start, R.string.close);
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
-        View v = mNavigationView.getHeaderView(0);
-        ShapeableImageView imageView = v.findViewById(R.id.sivProfile);
-        TextView viewProfile = v.findViewById(R.id.viewProfile);
-        viewProfile.setOnClickListener(v1 -> {
-            Intent intent = new Intent(MainActivity.this, UserAccountSettingActivity.class);
-            intent.putExtra(UserAccountSettingActivity.DELETE_ACCOUNT_SHOW, true);
-            startActivity(intent);
-            closeDrawer();
-        });
+
         mNavigationView.setNavigationItemSelectedListener(item -> {
             closeDrawer();
             navigationItemSelected(item.getItemId());
             return true;
         });
 
+        setUpHeader(mNavigationView);
 
     }
 
@@ -102,23 +100,42 @@ public class MainActivity extends AppCompatActivity {
             intent = new Intent(this, BackupAndRestoreActivity.class);
         } else if (itemId == R.id.navFindMobile) {
             intent = new Intent(this, FindMobileActivity.class);
+        } else if (itemId == R.id.navLogout) {
+            logout();
+            return;
         } else {
             return;
         }
         startActivity(intent);
     }
 
+    private void logout() {
+
+       /* deleteDatabase(CallHelper.DATABASE_NAME);
+        deleteDatabase(ContactHelper.DATABASE_NAME);
+        deleteDatabase(SpamDbHelper.SPAM_DB);*/
+        FirebaseAuth.getInstance().signOut();
+        CommVar.callList.clear();
+        CommVar.contactsList.clear();
+        AppPreference.clearPreference(this);
+        Intent intent = new Intent(this, AccountActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+
+    }
+
     private void closeDrawer() {
         mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 
-    private void init() {
+    private void initViewComponent() {
         viewPager = findViewById(R.id.viewPager);
         tabLayout = findViewById(R.id.tabLayout);
     }
 
     private void setUpFragmentAdapter() {
-        fragmentAdapter = new FragmentAdapter(getSupportFragmentManager());
+        FragmentAdapter fragmentAdapter = new FragmentAdapter(getSupportFragmentManager());
         fragmentAdapter.addFragment(CallFragment.getInstance(this), getString(R.string.phone));
         fragmentAdapter.addFragment(ContactFragment.getInstance(), getString(R.string.contact));
         viewPager.setAdapter(fragmentAdapter);
@@ -151,4 +168,38 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void setUpHeader(NavigationView mNavigationView) {
+        View v = mNavigationView.getHeaderView(0);
+        ShapeableImageView imageView = v.findViewById(R.id.sivProfile);
+        TextView tvName = v.findViewById(R.id.tvName);
+        TextView tvEmail = v.findViewById(R.id.tvEmail);
+        TextView viewProfile = v.findViewById(R.id.viewProfile);
+        viewProfile.setOnClickListener(v1 -> {
+            Intent intent = new Intent(MainActivity.this, UserAccountSettingActivity.class);
+            intent.putExtra(UserAccountSettingActivity.IS_SAVE_DATA, false);
+            startActivity(intent);
+            closeDrawer();
+        });
+
+        FirebaseDB.UserInfo.getUserInfo(new OnResultCallback<UserInfoModel>() {
+            @Override
+            public void onSuccess(@NonNull UserInfoModel userInfoModel) {
+                if (userInfoModel.getUserName() != null) {
+                    tvName.setText(userInfoModel.getUserName());
+                }
+                if (userInfoModel.getUserEmail() != null) {
+                    tvEmail.setText(userInfoModel.getUserEmail());
+                }
+                Glide.with(MainActivity.this).load(userInfoModel.getUserProfile()).into(imageView);
+            }
+
+            @Override
+            public void onFailed(String failedMessage) {
+                Toast.makeText(MainActivity.this, failedMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
 }
+

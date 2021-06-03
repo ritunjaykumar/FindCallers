@@ -1,12 +1,16 @@
 package com.softgyan.findcallers.widgets.activity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -26,17 +30,28 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
 
     private ProgressDialog mDialog;
 
+
+    private boolean isDelete = false;
+    public static final String DELETE_KEY = "deleteKey";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+        if (getIntent() != null) {
+            isDelete = getIntent().getBooleanExtra(DELETE_KEY, false);
+        }
         Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         Objects.requireNonNull(getSupportActionBar()).setTitle("Account");
+        if (isDelete) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         initView();
         mAuth = new Authentication(this);
         mDialog = new ProgressDialog(this);
         mDialog.setProgressTitle("Sending Otp..");
+
     }
 
 
@@ -68,15 +83,15 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
                 Utils.hideViews(btnClearOtp, btnVerifyOtp);
                 break;
             }
-            case R.id.btnClearNumber:{
+            case R.id.btnClearNumber: {
                 etNumber.setText("");
                 break;
             }
-            case R.id.btnClearOtp:{
+            case R.id.btnClearOtp: {
                 etOtp.setText("");
                 break;
             }
-            case R.id.btnReset:{
+            case R.id.btnReset: {
                 mAuth = new Authentication(AccountActivity.this);
                 Utils.hideViews(etOtp, btnSendOtp, btnSendOtp, btnReset);
                 Utils.showViews(btnClearNumber, btnSendOtp);
@@ -115,8 +130,15 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         public void onSuccessLogin() {
             mDialog.dismiss();
-            Toast.makeText(AccountActivity.this, "login successful", Toast.LENGTH_SHORT).show();
-            Utils.openActivity(AccountActivity.this, WelcomeActivity.class, true);
+            if (isDelete) {
+                Intent intent = new Intent();
+                intent.putExtra("extra", 1);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            } else {
+                Toast.makeText(AccountActivity.this, "login successful", Toast.LENGTH_SHORT).show();
+                Utils.openActivity(AccountActivity.this, WelcomeActivity.class, true);
+            }
         }
 
         @Override
@@ -127,8 +149,8 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         @Override
         public void onFailed(String errorMessage) {
             mDialog.dismiss();
-            Log.d(TAG, "onFailed: error : "+errorMessage);
-            Utils.toastMessage(AccountActivity.this, "onFailed : "+errorMessage);
+            Log.d(TAG, "onFailed: error : " + errorMessage);
+            Utils.toastMessage(AccountActivity.this, "onFailed : " + errorMessage);
             Utils.showViews(btnClearNumber, btnSendOtp);
             Utils.enableViews(etNumber);
         }
@@ -168,4 +190,12 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         return null;
     }
 
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }

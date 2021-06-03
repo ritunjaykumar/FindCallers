@@ -9,6 +9,8 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.softgyan.findcallers.services.CallManagerServices;
 
 import java.util.Date;
@@ -16,8 +18,15 @@ import java.util.Date;
 public class CallReceiver extends CallStateReceiver {
     private static final String TAG = "CallReceiverTemp";
 
+    final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
     @Override
     protected void onCallStart(Context context, String mobNumber, Date startCallDate, int simId, boolean isOutGoing) {
+        Log.d(TAG, "onCallStart: receiver : "+currentUser);
+        if (currentUser == null) {
+            return;
+        }
+
         Log.d(TAG, "onCallStart: incoming ..." + mobNumber);
 
         Intent intent = new Intent(context, CallManagerServices.class);
@@ -32,21 +41,21 @@ public class CallReceiver extends CallStateReceiver {
 
     @Override
     protected void onCallReceive(Context context, String mobNumber, boolean isOutGoing) {
+        if (currentUser == null) {
+            return;
+        }
+
         sendBroadcastForService(context, CallManagerServices.CALL_HOOKED);
     }
 
     @Override
     protected void onCallEnd(Context context, String mobNumber, boolean isOutGoing, Date endCallDate, int simId) {
+        if (currentUser == null) {
+            return;
+        }
+
         Log.d(TAG, "onCallEnded: bye bye : " + mobNumber);
 
-        /*Intent intent = new Intent();
-        intent.setAction(CallManagerServices.CALL_NOTIFIER_RECEIVER_ACTION);
-        intent.putExtra(CallManagerServices.CALL_KEY, CallManagerServices.CALL_END);
-        intent.putExtra(MOBILE_NUMBER, mobNumber);
-        intent.putExtra(INCOMING_DATE, endCallDate);
-        intent.putExtra(SIM_ID, simId);
-        intent.putExtra(CallManagerServices.IS_OUT_GOING, isOutGoing);
-        context.sendBroadcast(intent);*/
         sendBroadcastForService(context, CallManagerServices.CALL_END);
     }
 

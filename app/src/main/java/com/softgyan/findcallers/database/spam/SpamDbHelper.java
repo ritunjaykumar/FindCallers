@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 
 public class SpamDbHelper extends SQLiteOpenHelper {
-    private static final String SPAM_DB = "SpamDb";
+    public static final String SPAM_DB = "SpamDb.db";
     private static final int SPAM_DB_VERSION = 1;
 
     public SpamDbHelper(@Nullable Context context) {

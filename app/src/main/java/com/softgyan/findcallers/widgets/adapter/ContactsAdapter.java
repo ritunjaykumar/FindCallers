@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 
 public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHolder> implements Filterable {
-    public static final String USER_CONTACT_DETAILS = "userContactDetails";
     public static final String POSITION = "position";
     private final List<ContactModel> contactList;
     private final List<ContactModel> contactListAll;
@@ -59,7 +58,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
         holder.itemView.setOnClickListener(v -> {
             try {
                 Intent contactDetailsIntent = new Intent(mContext, ContactDetailActivity.class);
-                contactDetailsIntent.putExtra(USER_CONTACT_DETAILS, contactModel);
+                contactDetailsIntent.putExtra(ContactDetailActivity.CONTACT_MODEL_KEY, contactModel);
                 contactDetailsIntent.putExtra(POSITION, position);
                 mContext.startActivity(contactDetailsIntent);
 

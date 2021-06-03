@@ -1,10 +1,12 @@
 package com.softgyan.findcallers.firebase;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.softgyan.findcallers.callback.OnResultCallback;
@@ -69,30 +71,61 @@ public final class FirebaseDB {
         }
 
         public synchronized static void getUserInfo(final OnResultCallback<UserInfoModel> resultCallback) {
+            try {
+                mFirestore.collection(FirebaseVar.User.USER_DB_NAME)
+                        .document(docName)
+                        .get()
+                        .addOnSuccessListener(ds -> {
+                            Boolean verifyEmail = ds.getBoolean(FirebaseVar.User.EMAIL_VERIFY);
+                            boolean tempEmailVerify = false;
+                            if (verifyEmail != null) {
+                                tempEmailVerify = verifyEmail;
+                            }
+
+
+                            UserInfoModel userInfoModel = UserInfoModel.getInstance(
+                                    ds.getString(FirebaseVar.User.USER_NAME),
+                                    ds.getString(FirebaseVar.User.USER_EMAIL),
+                                    ds.getString(FirebaseVar.User.USER_PROFILE),
+                                    ds.getString(FirebaseVar.User.USER_TAG),
+                                    tempEmailVerify,
+                                    ds.getString(FirebaseVar.User.USER_ADDRESS)
+
+                            );
+                            resultCallback.onSuccess(userInfoModel);
+                        })
+                        .addOnFailureListener(e -> resultCallback.onFailed("some thing error : " + e.getMessage()));
+            } catch (Exception e) {
+                resultCallback.onFailed("you don't have account");
+            }
+        }
+
+
+        public synchronized static void deleteAccount(Context context, OnUploadCallback callback) {
+            final boolean connectionAvailable = Utils.isInternetConnectionAvailable(context);
+            if (!connectionAvailable) {
+                callback.onUploadFailed("Check your internet connection.");
+                return;
+            }
+            final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                currentUser.delete()
+                        .addOnSuccessListener(unused -> callback.onUploadSuccess(null))
+                        .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
+            }
+        }
+
+
+        public synchronized static void deleteUserRecord(Context context, String documentID, OnUploadCallback callback) {
+            if (!Utils.isInternetConnectionAvailable(context)) {
+                callback.onUploadFailed("Check your internet connection.");
+                return;
+            }
             mFirestore.collection(FirebaseVar.User.USER_DB_NAME)
-                    .document(docName)
-                    .get()
-                    .addOnSuccessListener(ds -> {
-
-                        Boolean verifyEmail = ds.getBoolean(FirebaseVar.User.EMAIL_VERIFY);
-                        boolean tempEmailVerify = false;
-                        if (verifyEmail != null) {
-                            tempEmailVerify = verifyEmail;
-                        }
-
-
-                        UserInfoModel userInfoModel = UserInfoModel.getInstance(
-                                ds.getString(FirebaseVar.User.USER_NAME),
-                                ds.getString(FirebaseVar.User.USER_EMAIL),
-                                ds.getString(FirebaseVar.User.USER_PROFILE),
-                                ds.getString(FirebaseVar.User.USER_TAG),
-                                tempEmailVerify,
-                                ds.getString(FirebaseVar.User.USER_ADDRESS)
-
-                        );
-                        resultCallback.onSuccess(userInfoModel);
-                    })
-                    .addOnFailureListener(e -> resultCallback.onFailed("some thing error : " + e.getMessage()));
+                    .document(documentID)
+                    .delete()
+                    .addOnSuccessListener(unused -> callback.onUploadSuccess(null))
+                    .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
         }
 
     }
@@ -225,7 +258,7 @@ public final class FirebaseDB {
 
                     } catch (Exception e) {
                         Log.d(TAG, "onSuccess: error message : " + e.getMessage());
-                        if(callback!= null) {
+                        if (callback != null) {
                             callback.onUploadFailed(e.getMessage());
                         }
                     }

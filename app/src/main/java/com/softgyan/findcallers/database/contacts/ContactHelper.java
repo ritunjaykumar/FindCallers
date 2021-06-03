@@ -13,7 +13,7 @@ import com.softgyan.findcallers.database.contacts.ContactContracts.ContactsDetai
 public class ContactHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "FindCallersContact.DB";
+    public static final String DATABASE_NAME = "FindCallersContact.DB";
     private static final String TAG = ContactHelper.class.getName();
 
     public ContactHelper(@Nullable Context context) {
