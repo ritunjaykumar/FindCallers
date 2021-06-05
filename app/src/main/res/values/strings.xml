@@ -16,4 +16,21 @@
     <string name="contact">Contacts</string>
     <string name="backup_and_restore">Backup and Restore</string>
     <string name="call_now">Call Now</string>
+
+    <string-array name="businessName">
+        <item>Not Selected</item>
+        <item>Doctor</item>
+        <item>Electrician</item>
+        <item>Police Station</item>
+    </string-array>
+
+    <string-array name="distance">
+        <item>5 km</item>
+        <item>10 km</item>
+        <item>20 km</item>
+        <item>50 km</item>
+        <item>100 km</item>
+    </string-array>
+
+
 </resources>

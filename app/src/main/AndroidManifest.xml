@@ -14,12 +14,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.PROCESS_OUTGOING_CALLS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
 
     <application
         android:name=".application.App"
@@ -28,6 +29,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.FindCallers">
+        <activity
+            android:name=".widgets.activity.BusinessActivity"
+            android:exported="true" />
+        <activity
+            android:name=".widgets.activity.FilterActivity"
+            android:exported="true" />
+        <activity
+            android:name=".widgets.activity.SearchImportantNumberActivity"
+            android:exported="true" />
         <activity
             android:name=".widgets.activity.ScanNumberActivity"
             android:exported="true" />
@@ -71,7 +81,7 @@
         <activity
             android:name=".widgets.activity.MainActivity"
             android:exported="true" /> <!-- providers -->
-        <!--camera provider-->
+        <!-- camera provider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -120,9 +130,7 @@
             android:exported="false" /> <!-- services -->
         <service android:name=".services.SimDetectorService" />
         <service android:name=".services.CallManagerServices" />
-        <service android:name=".services.UploadContactService" />
-
-        <!--meta data-->
+        <service android:name=".services.UploadContactService" /> <!-- meta data -->
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr" />

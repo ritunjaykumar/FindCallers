@@ -37,10 +37,6 @@ public class ContactFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    public static ContactFragment getInstance() {
-        return new ContactFragment();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

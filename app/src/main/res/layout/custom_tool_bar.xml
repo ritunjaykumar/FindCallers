@@ -13,8 +13,8 @@
             android:id="@+id/toolBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="?attr/actionBarSize"
             android:background="@color/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
             app:layout_scrollFlags="enterAlways|scroll"
             app:title="@string/app_name"
             app:titleTextColor="@color/white" />

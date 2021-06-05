@@ -57,10 +57,6 @@ public class CallFragment extends Fragment {
     }
 
 
-    public static CallFragment getInstance(Context context) {
-        return new CallFragment(context);
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

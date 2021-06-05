@@ -3,16 +3,27 @@ package com.softgyan.findcallers.firebase;
 import android.content.Context;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.callback.OnSuccessfulCallback;
 import com.softgyan.findcallers.callback.OnUploadCallback;
+import com.softgyan.findcallers.models.DoctorModel;
 import com.softgyan.findcallers.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public final class FirebaseBasic {
     public synchronized static void uploadData(final String collectionName, final String documentName,
@@ -99,5 +110,20 @@ public final class FirebaseBasic {
                 .addOnSuccessListener(unused -> deleteCallback.onUploadSuccess(null))
                 .addOnFailureListener(e -> deleteCallback.onUploadFailed(e.getMessage()));
     }
+
+    public static synchronized void uploadBusinessRecord(String collectionName, String documentName,
+                                                         HashMap<String, Object> businessData, OnUploadCallback callback) {
+
+        FirebaseFirestore mFirestore = FirebaseFirestore.getInstance();
+        mFirestore.collection(FirebaseVar.Business.DB_NAME)
+                .document(collectionName)
+                .collection(collectionName)
+                .document(documentName)
+                .set(businessData)
+                .addOnSuccessListener(unused -> callback.onUploadFailed(null))
+                .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
+    }
+
+
 
 }

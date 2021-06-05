@@ -271,7 +271,7 @@ public class UserAccountSettingActivity extends AppCompatActivity implements Vie
             public void onFailed(String failedMessage) {
                 Toast.makeText(UserAccountSettingActivity.this, failedMessage, Toast.LENGTH_SHORT).show();
                 mUserInfo = UserInfoModel.getInstance(null, null, null,
-                        null, false, null);
+                        null, false, null, false);
                 pDialog.dismiss();
             }
 

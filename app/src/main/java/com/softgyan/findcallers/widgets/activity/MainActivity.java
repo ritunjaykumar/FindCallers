@@ -100,6 +100,8 @@ public class MainActivity extends AppCompatActivity {
             intent = new Intent(this, BackupAndRestoreActivity.class);
         } else if (itemId == R.id.navFindMobile) {
             intent = new Intent(this, FindMobileActivity.class);
+        } else if (itemId == R.id.navSearchImportantNumber) {
+            intent = new Intent(this, SearchImportantNumberActivity.class);
         } else if (itemId == R.id.navLogout) {
             logout();
             return;
@@ -136,8 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpFragmentAdapter() {
         FragmentAdapter fragmentAdapter = new FragmentAdapter(getSupportFragmentManager());
-        fragmentAdapter.addFragment(CallFragment.getInstance(this), getString(R.string.phone));
-        fragmentAdapter.addFragment(ContactFragment.getInstance(), getString(R.string.contact));
+        fragmentAdapter.addFragment(new CallFragment(this), getString(R.string.phone));
+        fragmentAdapter.addFragment(new ContactFragment(), getString(R.string.contact));
         viewPager.setAdapter(fragmentAdapter);
         viewPager.addOnPageChangeListener(callback);
         tabLayout.setupWithViewPager(viewPager);

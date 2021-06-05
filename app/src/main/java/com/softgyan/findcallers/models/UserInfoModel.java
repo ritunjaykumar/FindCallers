@@ -3,7 +3,9 @@ package com.softgyan.findcallers.models;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public final class UserInfoModel {
+import java.io.Serializable;
+
+public final class UserInfoModel implements Serializable {
     private String userName;
     private String userEmail;
     private String userProfile;
@@ -11,16 +13,18 @@ public final class UserInfoModel {
     private boolean emailVerify;
     private String userAddress;
     private String accountMobileNumber;
+    private boolean businessAccount;
     private static UserInfoModel mModel;
 
     private UserInfoModel(String userName, String userEmail, String userProfile, String userTag,
-                          boolean emailVerify, String userAddress) {
+                          boolean emailVerify, String userAddress, boolean businessAccount) {
         this.userName = userName;
         this.userEmail = userEmail;
         this.userProfile = userProfile;
         this.userTag = userTag;
         this.emailVerify = emailVerify;
         this.userAddress = userAddress;
+        this.businessAccount = businessAccount;
         final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null)
             this.accountMobileNumber = currentUser.getPhoneNumber();
@@ -29,8 +33,8 @@ public final class UserInfoModel {
     }
 
     private UserInfoModel(String userName, String userEmail, String userProfile, String userTag,
-                          boolean emailVerify, String userAddress, String accountMobileNumber) {
-        this(userName, userEmail, userProfile, userTag, emailVerify, userAddress);
+                          boolean emailVerify, String userAddress, String accountMobileNumber, boolean businessAccount) {
+        this(userName, userEmail, userProfile, userTag, emailVerify, userAddress, businessAccount);
         this.accountMobileNumber = accountMobileNumber;
     }
 
@@ -86,6 +90,14 @@ public final class UserInfoModel {
         return accountMobileNumber;
     }
 
+    public boolean isBusinessAccount() {
+        return businessAccount;
+    }
+
+    public void setBusinessAccount(boolean businessAccount) {
+        this.businessAccount = businessAccount;
+    }
+
     @Override
     public String toString() {
         return "UserInfoModel{" +
@@ -96,25 +108,26 @@ public final class UserInfoModel {
                 ", emailVerify=" + emailVerify +
                 ", userAddress='" + userAddress + '\'' +
                 ", accountMobileNumber='" + accountMobileNumber + '\'' +
+                ", businessAccount=" + businessAccount +
                 '}';
     }
 
     public static UserInfoModel getInstance(String userName, String userEmail, String userProfile,
                                             String userTag, boolean isEmailVerify, String userAddress,
-                                            String accountMobileNumber) {
+                                            String accountMobileNumber, boolean businessAccount) {
 
         if (mModel == null) {
             mModel = new UserInfoModel(userName, userEmail, userProfile, userTag, isEmailVerify,
-                    userAddress, accountMobileNumber);
+                    userAddress, accountMobileNumber, businessAccount);
         }
         return mModel;
     }
 
     public static UserInfoModel getInstance(String userName, String userEmail, String userProfile,
-                                            String userTag, boolean isEmailVerify, String userAddress) {
+                                            String userTag, boolean isEmailVerify, String userAddress, boolean businessAccount) {
 
         if (mModel == null) {
-            mModel = new UserInfoModel(userName, userEmail, userProfile, userTag, isEmailVerify, userAddress);
+            mModel = new UserInfoModel(userName, userEmail, userProfile, userTag, isEmailVerify, userAddress, businessAccount);
         }
         return mModel;
     }
