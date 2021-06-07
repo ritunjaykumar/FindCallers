@@ -22,6 +22,7 @@ import com.softgyan.findcallers.models.UserInfoModel;
 import com.softgyan.findcallers.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -333,18 +334,19 @@ public final class FirebaseDB {
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         final List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
+                        Log.d(TAG, "getDoctorRecord: documents size : " + documents.size());
                         for (DocumentSnapshot ds : documents) {
                             GeoPoint geoPoint = ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT);
                             if (geoPoint == null) continue;
                             double sRange = Utils.getDistanceFromLatLonInKm(lat, lon,
                                     geoPoint.getLatitude(), geoPoint.getLongitude());
+                            Log.d(TAG, "getDoctorRecord: sRange : " + sRange);
                             if (sRange <= range) {
                                 final DoctorModel doctorDetails = getDoctorDetails(ds);
                                 doctorList.add(doctorDetails);
                             }
-                            callback.onSuccess(doctorList);
-
                         }
+                        callback.onSuccess(doctorList);
                     })
                     .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
         }
@@ -452,6 +454,39 @@ public final class FirebaseDB {
                     .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
         }
 
+    }
+
+
+    public static final class CallNotification {
+        public static synchronized void setCallNotification(String mobileNumber,
+                                                            HashMap<String, Object> notifyData, OnUploadCallback callback) {
+            FirebaseBasic.uploadData(FirebaseVar.CallNotification.DB_NAME, mobileNumber, notifyData,
+                    callback);
+        }
+
+        public static synchronized void getCallNotification(@NonNull String mobileNumber,
+                                                            OnResultCallback<HashMap<String, Object>> callback) {
+            FirebaseBasic.getData(FirebaseVar.CallNotification.DB_NAME, mobileNumber, new OnResultCallback<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(@NonNull DocumentSnapshot ds) {
+                    HashMap<String, Object> data = new HashMap<>();
+                    String message = ds.getString(FirebaseVar.CallNotification.MESSAGE);
+                    final Date startDate = ds.getDate(FirebaseVar.CallNotification.START_DATE);
+                    final Date endDate = ds.getDate(FirebaseVar.CallNotification.END_DATE);
+
+                    data.put(FirebaseVar.CallNotification.MESSAGE, message);
+                    data.put(FirebaseVar.CallNotification.START_DATE, startDate);
+                    data.put(FirebaseVar.CallNotification.END_DATE, endDate);
+                    callback.onSuccess(data);
+
+                }
+
+                @Override
+                public void onFailed(String failedMessage) {
+                    callback.onFailed(failedMessage);
+                }
+            });
+        }
     }
 
 

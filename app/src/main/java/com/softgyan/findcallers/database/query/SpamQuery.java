@@ -125,4 +125,16 @@ public final class SpamQuery {
             return (List<BlockNumberModel>) o;
         return null;
     }
+
+
+    public synchronized static boolean isNumberInSpamList(Context context, String number) {
+        String selection = " WHERE " + SpamContract.BLOCK_COLUMN_NUMBER + " =?";
+        String[] selectionArgs = {number};
+        final Cursor query = context.getContentResolver().query(SpamContract.CONTENT_BLOCK_URI,
+                null, selection, selectionArgs, null);
+
+        int querySize = query.getCount();
+        query.close();
+        return querySize == 1;
+    }
 }

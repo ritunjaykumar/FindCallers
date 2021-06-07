@@ -148,8 +148,6 @@ public class BusinessActivity extends AppCompatActivity {
     }
 
 
-
-
     private BusinessRecord getData() {
         String strName = etName.getText().toString();
         String strContactNumber = etContact.getText().toString();

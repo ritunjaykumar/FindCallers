@@ -9,8 +9,7 @@ import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.services.CallManagerServices;
 
 import java.util.Date;
@@ -18,12 +17,11 @@ import java.util.Date;
 public class CallReceiver extends CallStateReceiver {
     private static final String TAG = "CallReceiverTemp";
 
-    final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
     @Override
     protected void onCallStart(Context context, String mobNumber, Date startCallDate, int simId, boolean isOutGoing) {
-        Log.d(TAG, "onCallStart: receiver : "+currentUser);
-        if (currentUser == null) {
+        final boolean login = AppPreference.isLogin(context);
+        if (!login) {
             return;
         }
 
@@ -41,7 +39,8 @@ public class CallReceiver extends CallStateReceiver {
 
     @Override
     protected void onCallReceive(Context context, String mobNumber, boolean isOutGoing) {
-        if (currentUser == null) {
+        final boolean login = AppPreference.isLogin(context);
+        if (!login) {
             return;
         }
 
@@ -50,7 +49,8 @@ public class CallReceiver extends CallStateReceiver {
 
     @Override
     protected void onCallEnd(Context context, String mobNumber, boolean isOutGoing, Date endCallDate, int simId) {
-        if (currentUser == null) {
+        final boolean login = AppPreference.isLogin(context);
+        if (!login) {
             return;
         }
 

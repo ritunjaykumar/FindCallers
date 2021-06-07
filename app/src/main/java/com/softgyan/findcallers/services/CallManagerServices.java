@@ -23,13 +23,20 @@ import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.database.call.system.SystemCalls;
 import com.softgyan.findcallers.database.query.CallQuery;
 import com.softgyan.findcallers.database.query.ContactsQuery;
+import com.softgyan.findcallers.database.query.SpamQuery;
+import com.softgyan.findcallers.database.spam.SpamContract;
 import com.softgyan.findcallers.firebase.FirebaseDB;
+import com.softgyan.findcallers.hardware.CallHardware;
+import com.softgyan.findcallers.models.BlockNumberModel;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallNumberModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.utils.CallerDialog;
 import com.softgyan.findcallers.utils.Utils;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class CallManagerServices extends Service {
 
@@ -50,6 +57,8 @@ public class CallManagerServices extends Service {
     private volatile boolean isOutgoing = false;
     private volatile boolean isHooked = false;
     private volatile boolean isCallInitiate = false;
+
+    boolean isSpam = false;
 
 
     private volatile Intent callIntent = null;
@@ -169,11 +178,13 @@ public class CallManagerServices extends Service {
                      * */
                     Log.d(TAG, "run: call end");
                     lastUpdate = callValue;
-                    if (!isOutgoing && !isHooked) {
-                        //it means called 'missed call'
-                        callerInfoModels.setMessage("Missed Called");
-                    } else {
-                        callerInfoModels.setMessage(null);
+                    if(!isSpam) {
+                        if (!isOutgoing && !isHooked) {
+                            //it means called 'missed call'
+                            callerInfoModels.setMessage("Missed Called");
+                        } else {
+                            callerInfoModels.setMessage(null);
+                        }
                     }
 
                     SystemClock.sleep(2000);
@@ -190,6 +201,32 @@ public class CallManagerServices extends Service {
 
     private void searchNumber(final String mobNum) {
         Log.d(TAG, "searchNumber: mobileNumber : " + mobNum);
+        Log.d(TAG, "searchNumber: is outgoing :"+isOutgoing);
+        if (!isOutgoing) {
+            final HashMap<String, Object> blockList = SpamQuery.getBlockList(getApplicationContext(),
+                    Utils.trimNumber(mobNum));
+            Log.d(TAG, "searchNumber: blockList : "+blockList);
+            final Boolean tempIsPresent = (Boolean) blockList.get(SpamQuery.IS_PRESENT);
+            Log.d(TAG, "searchNumber: tempIsPresent : "+tempIsPresent);
+            if (tempIsPresent != null && tempIsPresent) {
+                List<BlockNumberModel> blockNumberModels = (List<BlockNumberModel>) blockList.get(SpamQuery.BLOCK_NUMBER_LIST);
+                BlockNumberModel bn = blockNumberModels.get(0);
+                callerInfoModels = CallerInfoModel.getInstance(
+                        bn.getName(), bn.getNumber(), -1, null, true, isOutgoing
+                );
+                if (bn.getType() == SpamContract.BLOCK_TYPE) {
+                    callerInfoModels.setMessage("Blocked number");
+                } else {
+                    callerInfoModels.setMessage("Spam number");
+                }
+                isSpam = true;
+                showDialogOverCall(callerInfoModels, false);
+                final boolean cutTheCall = CallHardware.cutTheCall(getApplicationContext());
+                Log.d(TAG, "searchNumber: cutTheCall : " + cutTheCall);
+                return;
+            }
+        }
+
         boolean flagLocalContact = false;
         boolean flagSystemContact = false;
 

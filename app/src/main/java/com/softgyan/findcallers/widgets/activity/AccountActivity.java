@@ -16,6 +16,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.firebase.Authentication;
+import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
@@ -131,6 +132,7 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         public void onSuccessLogin() {
             mDialog.dismiss();
             if (isDelete) {
+                AppPreference.setLogin(AccountActivity.this, true);
                 Intent intent = new Intent();
                 intent.putExtra("extra", 1);
                 setResult(Activity.RESULT_OK, intent);

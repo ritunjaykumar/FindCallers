@@ -28,6 +28,7 @@ public class DoctorModel extends BusinessModel implements Serializable {
     public String toString() {
         return "DoctorModel{" +
                 "doctorType='" + doctorType + '\'' +
+                "basic =" + super.toString() +
                 '}';
     }
 }

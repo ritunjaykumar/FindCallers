@@ -101,6 +101,16 @@ public final class AppPreference {
     }
 
 
+    private static final String LOGIN_KEY = "loginKey";
+
+    public static synchronized void setLogin(Context context, boolean isLogin) {
+        getSharedEditor(context).putBoolean(LOGIN_KEY, isLogin).apply();
+    }
+
+    public static synchronized boolean isLogin(Context context){
+        return getSharedPref(context).getBoolean(LOGIN_KEY,false);
+    }
+
     public static synchronized void clearPreference(Context context) {
         getSharedEditor(context).clear().apply();
     }

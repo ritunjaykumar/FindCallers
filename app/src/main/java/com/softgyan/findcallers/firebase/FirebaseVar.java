@@ -9,7 +9,7 @@ public final class FirebaseVar {
         public static final String USER_TAG = "userTag";
         public static final String EMAIL_VERIFY = "emailVerify";
         public static final String USER_ADDRESS = "userAddress";
-        public static final String BUSINESS_ACCOUNT="businessAccount";
+        public static final String BUSINESS_ACCOUNT = "businessAccount";
     }
 
     public static final class MobileNumber {
@@ -42,14 +42,14 @@ public final class FirebaseVar {
     }
 
     private interface Common {
-        String NAME = "Name";
-        String GEO_POINT = "GeoPoint";
-        String CONTACT = "Contact";
-        String AREA = "Area";
-        String PIN_CODE = "PinCode";
-        String STATE = "State";
-        String DISTRICT = "District";
-        String MAP_LOCATION = "District";
+        String NAME = "name";
+        String GEO_POINT = "point";
+        String CONTACT = "contact";
+        String AREA = "area";
+        String PIN_CODE = "pinCode";
+        String STATE = "state";
+        String DISTRICT = "district";
+        String MAP_LOCATION = "mapLocation";
         String GENDER = "gender";
     }
 
@@ -63,12 +63,18 @@ public final class FirebaseVar {
 
     public static final class Doctor implements Common {
         public static final String DB_NAME = "Doctor";
-        public static final String NAME = "Doctor Name";
-        public static final String DOCTOR_TYPE = "DoctorType";
+        public static final String DOCTOR_TYPE = "doctorType";
     }
 
     public static final class Electrician implements Common {
         public static final String NAME = "Electrician Name";
         public static final String DB_NAME = "Electrician";
+    }
+
+    public static final class CallNotification {
+        public static final String DB_NAME = "CallNotification";
+        public static final String START_DATE = "startDate";
+        public static final String END_DATE = "endDate";
+        public static final String MESSAGE = "message";
     }
 }

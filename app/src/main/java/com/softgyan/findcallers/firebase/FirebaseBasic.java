@@ -5,23 +5,18 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.callback.OnSuccessfulCallback;
 import com.softgyan.findcallers.callback.OnUploadCallback;
-import com.softgyan.findcallers.models.DoctorModel;
 import com.softgyan.findcallers.utils.Utils;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -81,6 +76,28 @@ public final class FirebaseBasic {
         }
     }
 
+    public static synchronized void getData(final String collectionName, OnResultCallback<List<DocumentSnapshot>> callback) {
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseFirestore.collection(collectionName)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    final List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
+                    callback.onSuccess(documents);
+                })
+                .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
+    }
+
+    public static synchronized void getData(final String collectionName, @NonNull String documentName
+            , OnResultCallback<DocumentSnapshot> callback) {
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseFirestore.collection(collectionName)
+                .document(documentName)
+                .get()
+                .addOnSuccessListener(callback::onSuccess)
+                .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
+    }
+
+
     private static final String HOME_DIR = "images";
     private static final String PROFILE_DIR = "profileDir";
 
@@ -123,7 +140,6 @@ public final class FirebaseBasic {
                 .addOnSuccessListener(unused -> callback.onUploadFailed(null))
                 .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
     }
-
 
 
 }

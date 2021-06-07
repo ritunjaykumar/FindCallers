@@ -1,13 +1,19 @@
 package com.softgyan.findcallers.hardware;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
+import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+
+import com.softgyan.findcallers.utils.Utils;
 
 public final class CallHardware {
     public static final int INVALID_SIM_INFO = -1;
@@ -47,6 +53,23 @@ public final class CallHardware {
         } else {
             Toast.makeText(context, "system don't have telephone support", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+    public static boolean cutTheCall(Context context) {
+        TelecomManager telecomManager = (TelecomManager) context.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
+        String[] permission ={Manifest.permission.READ_PHONE_STATE};
+        if(!Utils.checkPermission(context,permission)){
+            return false;
+        }
+
+
+        if (telecomManager.isInCall()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                boolean callDisconnected = telecomManager.endCall();
+            }
+        }
+        return true;
     }
 
 
