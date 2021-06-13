@@ -35,6 +35,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FindCallers">
         <activity
+            android:name=".widgets.activity.SettingActivity"
+            android:exported="true" />
+        <activity
             android:name=".widgets.activity.CallNotificationActivity"
             android:exported="true" />
         <activity
@@ -73,7 +76,13 @@
             android:exported="true" />
         <activity
             android:name=".widgets.activity.SearchNumberActivity"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".widgets.activity.WelcomeActivity"
             android:exported="true" />
@@ -135,7 +144,11 @@
         </receiver>
         <receiver
             android:name=".receivers.SaveContactReceiver"
-            android:exported="false" /> <!-- services -->
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.softgyan.findcaller.SAVE_DATA" />
+            </intent-filter>
+        </receiver> <!-- services -->
         <service android:name=".services.SimDetectorService" />
         <service android:name=".services.CallManagerServices" />
         <service android:name=".services.UploadContactService" /> <!-- meta data -->

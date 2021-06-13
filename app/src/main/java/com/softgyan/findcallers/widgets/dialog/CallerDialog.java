@@ -1,9 +1,11 @@
-package com.softgyan.findcallers.utils;
+package com.softgyan.findcallers.widgets.dialog;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,12 +18,16 @@ import com.google.android.material.imageview.ShapeableImageView;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.hardware.CallHardware;
 import com.softgyan.findcallers.models.CallerInfoModel;
+import com.softgyan.findcallers.receivers.SaveContactReceiver;
+import com.softgyan.findcallers.utils.CallUtils;
+import com.softgyan.findcallers.utils.Utils;
 
-public class CallerDialog {
+public final class CallerDialog implements View.OnClickListener {
     private final WindowManager windowManager;
     private WindowManager.LayoutParams params;
     private final LayoutInflater layoutInflater;
     private static final String TAG = "CallerDialog";
+    private CallerInfoModel callerInfo;
 
     private View view;
 
@@ -54,11 +60,14 @@ public class CallerDialog {
                 wmFlag,
                 PixelFormat.TRANSLUCENT
         );
+
+
     }
 
     @SuppressLint("SetTextI18n")
     public void showDialog(final CallerInfoModel callerInfo, boolean isViewUpdate) {
         if (callerInfo == null) return;
+        this.callerInfo = callerInfo;
         if (isViewUpdate) {
             LinearLayout linearLayout = view.findViewById(R.id.llOptionContainer);
             Utils.showViews(linearLayout);
@@ -71,14 +80,10 @@ public class CallerDialog {
         }
 
 
-        view.findViewById(R.id.ibClose).setOnClickListener(v -> {
-            closeWindowManager();
+        view.findViewById(R.id.ibClose).setOnClickListener(this);
 
-        });
-        view.findViewById(R.id.tvCall).setOnClickListener(v -> {
-            CallHardware.makeCall(context, callerInfo.getNumber());
-            closeWindowManager();
-        });
+        view.findViewById(R.id.tvCall).setOnClickListener(this);
+
         TextView tvName = view.findViewById(R.id.tvName);
         if (!Utils.isNull(callerInfo.getName())) {
             tvName.setText(callerInfo.getName());
@@ -92,7 +97,8 @@ public class CallerDialog {
 
         TextView tvNumber = view.findViewById(R.id.tvNumber);
         tvNumber.setText(callerInfo.getNumber());
-
+        view.findViewById(R.id.tvBlock).setOnClickListener(this);
+        view.findViewById(R.id.tvMessage).setOnClickListener(this);
 
         if (isViewUpdate) {
             try {
@@ -104,10 +110,31 @@ public class CallerDialog {
         } else {
             windowManager.addView(view, params);
         }
+        if (isViewUpdate)
+            new Handler().postDelayed(this::closeWindowManager, 1000 * 60);
     }
 
-    private void closeWindowManager(){
+    private void closeWindowManager() {
         windowManager.removeView(view);
+    }
+
+    @Override
+    public void onClick(View v) {
+        final int id = v.getId();
+        if (id == R.id.ibClose) {
+        } else if (id == R.id.tvCall) {
+            CallHardware.makeCall(context, callerInfo.getNumber());
+        } else if (id == R.id.tvMessage) {
+            CallUtils.sendMessageIntent(context, callerInfo.getNumber());
+        } else if (id == R.id.tvBlock) {
+            Intent intent = new Intent(context, SaveContactReceiver.class);
+            intent.putExtra(SaveContactReceiver.NUMBER_KEY, callerInfo.getNumber());
+            intent.putExtra(SaveContactReceiver.MODE, SaveContactReceiver.BLOCK_NUMBER);
+            intent.putExtra(SaveContactReceiver.NAME, callerInfo.getName());
+            context.sendBroadcast(intent);
+
+        }
+        closeWindowManager();
     }
 
 }

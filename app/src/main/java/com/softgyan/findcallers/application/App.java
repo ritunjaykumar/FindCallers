@@ -7,12 +7,14 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.query.CallQuery;
 import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
+import com.softgyan.findcallers.models.SimCardInfoModel;
 import com.softgyan.findcallers.preferences.AppPreference;
 
 import java.util.List;
@@ -26,6 +28,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        saveSimInfo();
         getContacts();
         createNotificationChannels();
         Log.d(TAG, "onCreate: called");
@@ -46,7 +49,24 @@ public class App extends Application {
         }
     }
 
+    private void saveSimInfo() {
 
+        if (AppPreference.SimPreference.getSimIccsSize(this) != -1) {
+            return;
+        }
+
+
+        final List<SimCardInfoModel> simInfoS = SimCardInfoModel.getSimInfoS(this);
+        if (simInfoS == null) {
+            Toast.makeText(this, "There are no sims detected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String[] tempIccCode = new String[simInfoS.size()];
+        for (int i = 0; i < tempIccCode.length; i++) {
+            tempIccCode[i] = simInfoS.get(i).getIccId();
+        }
+        AppPreference.SimPreference.setSimIcc(this, tempIccCode);
+    }
 
     /*get all local contacts*/
 

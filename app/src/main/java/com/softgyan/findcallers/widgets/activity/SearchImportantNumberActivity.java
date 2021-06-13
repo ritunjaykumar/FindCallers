@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ import com.softgyan.findcallers.widgets.adapter.BusinessRecordAdapter;
 import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SearchImportantNumberActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -49,6 +51,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
         setContentView(R.layout.activity_search_important_number);
         Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         dialog = new ProgressDialog(this);
         initViewComponent();
     }
@@ -104,7 +107,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
 
     public void getCurrentGeoPoint(String filterValue, int distance) {
         Log.d("Find Location", "in find_location");
-        if(!checkPermission()){
+        if (!checkPermission()) {
             return;
         }
         LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -117,7 +120,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
                 Log.d(TAG, "find_Location: latitude : " + latitude + " longitude : " + longitude);
                 getDataFromServer(latitude, longitude, filterValue, distance);
                 break;
-            }else {
+            } else {
                 Log.d(TAG, "getCurrentGeoPoint: get location value is null");
             }
         }
@@ -147,7 +150,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
             @Override
             public void onSuccess(@NonNull List<DoctorModel> doctorModels) {
                 dialog.dismiss();
-                Log.d(TAG, "onSuccess: doctor model "+ doctorModels);
+                Log.d(TAG, "onSuccess: doctor model " + doctorModels);
                 setupRecyclerView(new BusinessRecord(BusinessRecord.DOCTOR_TYPE, doctorModels));
             }
 
@@ -163,7 +166,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
         FirebaseDB.Business.getElectricianRecord(range, lat, lan, new OnResultCallback<List<ElectricianModel>>() {
             @Override
             public void onSuccess(@NonNull List<ElectricianModel> electricianModels) {
-                Log.d(TAG, "onSuccess: electrician model : "+electricianModels);
+                Log.d(TAG, "onSuccess: electrician model : " + electricianModels);
                 setupRecyclerView(new BusinessRecord(electricianModels, BusinessRecord.ELECTRICIAN_TYPE));
             }
 
@@ -184,7 +187,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
                 this.filterValue = filterValue;
                 int distance = data.getIntExtra(FilterActivity.DISTANCE_KEY, -1);
                 this.distance = distance;
-                Log.d(TAG, "onActivityResult: distance : "+distance +" filter value : "+filterValue);
+                Log.d(TAG, "onActivityResult: distance : " + distance + " filter value : " + filterValue);
                 if (filterValue != null && distance != -1) {
                     getCurrentGeoPoint(filterValue, distance);
                 }
@@ -219,5 +222,13 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
 
     private void toastMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

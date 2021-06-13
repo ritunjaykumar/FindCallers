@@ -58,6 +58,10 @@ public final class AppPreference {
 
         }
 
+        public static synchronized int getSimIccsSize(Context c) {
+            return getSharedPref(c).getInt(SIM_ICC_SIZE_KEY, -1);
+        }
+
         public static String[] getSimIccS(Context context) {
             final int simIccSize = getSharedPref(context).getInt(SIM_ICC_SIZE_KEY, -1);
             String[] simIccS = new String[simIccSize];
@@ -107,13 +111,21 @@ public final class AppPreference {
         getSharedEditor(context).putBoolean(LOGIN_KEY, isLogin).apply();
     }
 
-    public static synchronized boolean isLogin(Context context){
-        return getSharedPref(context).getBoolean(LOGIN_KEY,false);
+    public static synchronized boolean isLogin(Context context) {
+        return getSharedPref(context).getBoolean(LOGIN_KEY, false);
     }
 
     public static synchronized void clearPreference(Context context) {
         getSharedEditor(context).clear().apply();
     }
 
+    public static final String CALL_NOTIFICATION_KEY = "callNotification";
 
+    public static synchronized void setCallNotification(Context context, boolean callNotification) {
+        getSharedEditor(context).putBoolean(CALL_NOTIFICATION_KEY, callNotification).apply();
+    }
+
+    public static synchronized boolean getCallNotification(Context context) {
+        return getSharedPref(context).getBoolean(CALL_NOTIFICATION_KEY, false);
+    }
 }

@@ -5,7 +5,6 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -95,6 +94,18 @@ public final class FirebaseBasic {
                 .get()
                 .addOnSuccessListener(callback::onSuccess)
                 .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
+    }
+
+
+    public static synchronized void deleteDocument(final String collectionName, final String documentName,
+                                                   OnUploadCallback callback) {
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseFirestore.collection(collectionName)
+                .document(Utils.trimNumber(documentName))
+                .delete()
+                .addOnSuccessListener(unused -> callback.onUploadSuccess("Delete successful"))
+                .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
+
     }
 
 

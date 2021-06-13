@@ -35,6 +35,7 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_backup_and_restore.xml" value="0.2" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_block_number.xml" value="0.2" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_business.xml" value="0.25" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_call_notification.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_contact_detail.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_example.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_filter.xml" value="0.20833333333333334" />
@@ -44,6 +45,7 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_scan_number.xml" value="0.20833333333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_search_important_number.xml" value="0.25" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_search_number.xml" value="0.33" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_setting.xml" value="0.25" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_splash.xml" value="0.209375" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_user_account_setting.xml" value="0.25" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_welcome.xml" value="0.209375" />
@@ -56,7 +58,8 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_business_adapter.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_call_adapter.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_call_info.xml" value="0.20833333333333334" />
-        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_caller_info.xml" value="0.33" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_call_notification.xml" value="0.25" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_caller_info.xml" value="0.25" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_contact_adapter.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_custom_view.xml" value="0.20833333333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_dialing_pad.xml" value="0.20833333333333334" />

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +21,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -44,6 +46,19 @@ public class BusinessActivity extends AppCompatActivity {
     private EditText etName, etContact, etArea, etPin, etDistrict, etState;
     private RadioGroup rgGender, rgDoctorType;
     private boolean isDoctorSelected = false;
+
+    public static Boolean isLocationEnabled(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // This is a new method provided in API 28
+            LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            return lm.isLocationEnabled();
+        } else {
+            // This was deprecated in API 28
+            int mode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
+                    Settings.Secure.LOCATION_MODE_OFF);
+            return (mode != Settings.Secure.LOCATION_MODE_OFF);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,13 +93,13 @@ public class BusinessActivity extends AppCompatActivity {
             toastMessage("check your internet connection");
             return;
         }
-        if(!isLocationEnabled(this)){
+        if (!isLocationEnabled(this)) {
             toastMessage("gps is not enable");
             return;
         }
 
         final BusinessRecord data = getData();
-        Log.d(TAG, "saveRecord: data : "+data);
+        Log.d(TAG, "saveRecord: data : " + data);
         if (data == null) {
             return;
         }
@@ -114,7 +129,6 @@ public class BusinessActivity extends AppCompatActivity {
             });
         }
     }
-
 
     private void initSpinner() {
         LinearLayout llDoctorType = findViewById(R.id.llDoctorType);
@@ -146,7 +160,6 @@ public class BusinessActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private BusinessRecord getData() {
         String strName = etName.getText().toString();
@@ -223,7 +236,6 @@ public class BusinessActivity extends AppCompatActivity {
         return businessRecord;
     }
 
-
     private void toastMessage(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
@@ -258,16 +270,11 @@ public class BusinessActivity extends AppCompatActivity {
         return Utils.checkPermission(this, permission);
     }
 
-    public static Boolean isLocationEnabled(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            // This is a new method provided in API 28
-            LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-            return lm.isLocationEnabled();
-        } else {
-            // This was deprecated in API 28
-            int mode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
-                    Settings.Secure.LOCATION_MODE_OFF);
-            return (mode != Settings.Secure.LOCATION_MODE_OFF);
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
         }
+        return super.onOptionsItemSelected(item);
     }
 }

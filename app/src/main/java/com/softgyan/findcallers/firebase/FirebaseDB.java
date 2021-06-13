@@ -22,7 +22,6 @@ import com.softgyan.findcallers.models.UserInfoModel;
 import com.softgyan.findcallers.utils.Utils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -460,32 +459,52 @@ public final class FirebaseDB {
     public static final class CallNotification {
         public static synchronized void setCallNotification(String mobileNumber,
                                                             HashMap<String, Object> notifyData, OnUploadCallback callback) {
-            FirebaseBasic.uploadData(FirebaseVar.CallNotification.DB_NAME, mobileNumber, notifyData,
+            FirebaseBasic.uploadData(FirebaseVar.CallNotification.DB_NAME, Utils.trimNumber(mobileNumber), notifyData,
                     callback);
         }
 
-        public static synchronized void getCallNotification(@NonNull String mobileNumber,
+        public static synchronized void getCallNotification(Context context, @NonNull String mobileNumber,
                                                             OnResultCallback<HashMap<String, Object>> callback) {
-            FirebaseBasic.getData(FirebaseVar.CallNotification.DB_NAME, mobileNumber, new OnResultCallback<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(@NonNull DocumentSnapshot ds) {
-                    HashMap<String, Object> data = new HashMap<>();
-                    String message = ds.getString(FirebaseVar.CallNotification.MESSAGE);
-                    final Date startDate = ds.getDate(FirebaseVar.CallNotification.START_DATE);
-                    final Date endDate = ds.getDate(FirebaseVar.CallNotification.END_DATE);
+            /*ProgressDialog progressDialog = new ProgressDialog(context);
+            progressDialog.setProgressTitle("getting Call Notification data");
+            progressDialog.show();*/
+            FirebaseBasic.getData(FirebaseVar.CallNotification.DB_NAME, Utils.trimNumber(mobileNumber),
+                    new OnResultCallback<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(@NonNull DocumentSnapshot ds) {
+                            try {
+                                HashMap<String, Object> data = new HashMap<>();
+                                String message = ds.getString(FirebaseVar.CallNotification.MESSAGE);
+                                String startDate = ds.getString(FirebaseVar.CallNotification.START_DATE);
+                                String endDate = ds.getString(FirebaseVar.CallNotification.END_DATE);
+                                String startTime = ds.getString(FirebaseVar.CallNotification.START_TIME);
+                                String endTime = ds.getString(FirebaseVar.CallNotification.END_TIME);
 
-                    data.put(FirebaseVar.CallNotification.MESSAGE, message);
-                    data.put(FirebaseVar.CallNotification.START_DATE, startDate);
-                    data.put(FirebaseVar.CallNotification.END_DATE, endDate);
-                    callback.onSuccess(data);
+                                data.put(FirebaseVar.CallNotification.MESSAGE, message);
+                                data.put(FirebaseVar.CallNotification.START_DATE, startDate);
+                                data.put(FirebaseVar.CallNotification.END_TIME, endTime);
+                                data.put(FirebaseVar.CallNotification.START_TIME, startTime);
+                                data.put(FirebaseVar.CallNotification.END_DATE, endDate);
 
-                }
+                                Log.d(TAG, "onSuccess: hash value : " + data.toString());
+//                        progressDialog.dismiss();
+                                callback.onSuccess(data);
+                            } catch (Exception e) {
+                                callback.onFailed(e.getMessage());
+                            }
+                        }
 
-                @Override
-                public void onFailed(String failedMessage) {
-                    callback.onFailed(failedMessage);
-                }
-            });
+                        @Override
+                        public void onFailed(String failedMessage) {
+//                    progressDialog.dismiss();
+                            callback.onFailed(failedMessage);
+                        }
+                    });
+        }
+
+        public static synchronized void deleteCallNotification(@NonNull String mobileNumber,
+                                                               OnUploadCallback callback) {
+            FirebaseBasic.deleteDocument(FirebaseVar.CallNotification.DB_NAME, mobileNumber, callback);
         }
     }
 

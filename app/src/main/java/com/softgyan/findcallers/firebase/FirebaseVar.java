@@ -75,6 +75,8 @@ public final class FirebaseVar {
         public static final String DB_NAME = "CallNotification";
         public static final String START_DATE = "startDate";
         public static final String END_DATE = "endDate";
+        public static final String END_TIME = "endTime";
+        public static final String START_TIME = "startTime";
         public static final String MESSAGE = "message";
     }
 }

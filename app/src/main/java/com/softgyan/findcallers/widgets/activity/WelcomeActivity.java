@@ -50,7 +50,7 @@ public class WelcomeActivity extends AppCompatActivity {
     private void askPermission() {
         String[] permissions = {Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS,
                 Manifest.permission.WRITE_CALL_LOG, Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.CALL_PHONE};
+                Manifest.permission.CALL_PHONE, Manifest.permission.READ_SMS, Manifest.permission.SEND_SMS, Manifest.permission.RECEIVE_SMS};
 
         final boolean isPermitted = Utils.hasPermissions(this, permissions);
         if (!isPermitted) {
@@ -274,7 +274,7 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private static void openMainActivity(Context context) {
-        Log.d(TAG, "openMainActivity: start account activity"+ callFlag + " "+contactFlag);
+        Log.d(TAG, "openMainActivity: start account activity" + callFlag + " " + contactFlag);
         if (callFlag && contactFlag) {
             AppPreference.setWelcomeActivity(context, true);
             Intent intent = new Intent(context, UserAccountSettingActivity.class);

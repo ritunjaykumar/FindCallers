@@ -49,11 +49,10 @@ public class CallFragment extends Fragment {
     private FloatingActionButton fabHideShow;
     private BottomSheetBehavior<View> sheetBehavior;
     private RecyclerView recyclerView;
-    private final Context context;
 
-    public CallFragment(Context context) {
-        // Required empty public constructor
-        this.context = context;
+
+    public CallFragment() {
+
     }
 
 
@@ -115,7 +114,7 @@ public class CallFragment extends Fragment {
                 case (CallLogAdapter.CallLogCallback.SAVE_NUMBER): {
                     final String[] name = new String[1];
                     if (callModel.getCacheName() == null) {
-                        InputDialog inputDialog = new InputDialog(context, (dialog, text) -> {
+                        InputDialog inputDialog = new InputDialog(getContext(), (dialog, text) -> {
                             name[0] = text;
                             dialog.dismiss();
                         });
@@ -127,7 +126,7 @@ public class CallFragment extends Fragment {
 
                     ContactModel contactModel = new ContactModel(name[0]);
                     contactModel.setContactNumbers(new ContactNumberModel(callModel.getCallNumberList().get(0).getNumber()));
-                    SystemContacts.saveContactToSystem(context, contactModel);
+                    SystemContacts.saveContactToSystem(getContext(), contactModel);
                 }
 
             }
@@ -140,7 +139,7 @@ public class CallFragment extends Fragment {
     };
 
     private void deleteCAllHistory(CallModel callModel) {
-        final int i = CallQuery.deleteAllCallLog(context, callModel.getNameId());
+        final int i = CallQuery.deleteAllCallLog(getContext(), callModel.getNameId());
         if (i > 0) {
             callList.removeIf(cModel -> cModel.getNameId() == callModel.getNameId());
             callAdapter.notifyDataSetChanged();

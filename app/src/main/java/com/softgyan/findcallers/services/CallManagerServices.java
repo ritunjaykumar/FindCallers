@@ -32,8 +32,8 @@ import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallNumberModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
-import com.softgyan.findcallers.utils.CallerDialog;
 import com.softgyan.findcallers.utils.Utils;
+import com.softgyan.findcallers.widgets.dialog.CallerDialog;
 
 import java.util.HashMap;
 import java.util.List;
@@ -178,10 +178,11 @@ public class CallManagerServices extends Service {
                      * */
                     Log.d(TAG, "run: call end");
                     lastUpdate = callValue;
-                    if(!isSpam) {
+                    if (!isSpam) {
                         if (!isOutgoing && !isHooked) {
                             //it means called 'missed call'
-                            callerInfoModels.setMessage("Missed Called");
+                            if (callerInfoModels != null)
+                                callerInfoModels.setMessage("Missed Called");
                         } else {
                             callerInfoModels.setMessage(null);
                         }
@@ -201,13 +202,13 @@ public class CallManagerServices extends Service {
 
     private void searchNumber(final String mobNum) {
         Log.d(TAG, "searchNumber: mobileNumber : " + mobNum);
-        Log.d(TAG, "searchNumber: is outgoing :"+isOutgoing);
+        Log.d(TAG, "searchNumber: is outgoing :" + isOutgoing);
         if (!isOutgoing) {
             final HashMap<String, Object> blockList = SpamQuery.getBlockList(getApplicationContext(),
                     Utils.trimNumber(mobNum));
-            Log.d(TAG, "searchNumber: blockList : "+blockList);
+            Log.d(TAG, "searchNumber: blockList : " + blockList);
             final Boolean tempIsPresent = (Boolean) blockList.get(SpamQuery.IS_PRESENT);
-            Log.d(TAG, "searchNumber: tempIsPresent : "+tempIsPresent);
+            Log.d(TAG, "searchNumber: tempIsPresent : " + tempIsPresent);
             if (tempIsPresent != null && tempIsPresent) {
                 List<BlockNumberModel> blockNumberModels = (List<BlockNumberModel>) blockList.get(SpamQuery.BLOCK_NUMBER_LIST);
                 BlockNumberModel bn = blockNumberModels.get(0);

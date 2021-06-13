@@ -62,7 +62,13 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
         isServiceStarted = true;
         this.startId = startId;
         this.mIntent = intent;
-        backgroundThread.start();
+        try {
+            backgroundThread.start();
+        }catch (Exception e){
+            stopSelf(startId);
+            Log.d(TAG, "onStartCommand: error : "+ e.getMessage());
+            e.printStackTrace();
+        }
         Log.d(TAG, "onStartCommand: onStartCommand startId : " + startId);
         return START_NOT_STICKY;
     }
@@ -88,14 +94,11 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
         Intent actionIntent = new Intent(getApplicationContext(), tickBroadcastReceiver.getClass());
         actionIntent.putExtra(TASK_KEY, STOP_SERVICE_TASK);
 
-        PendingIntent actionPendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 1, actionIntent, 0);
-
         Notification notification = new NotificationCompat.Builder(this, App.CHANNEL_ID_2)
                 .setContentTitle(getString(R.string.app_name))
-                .setContentText("Doing some background task")
+                .setContentText("Find mobile by SMS")
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentIntent(contentPendingIntent)
-                .addAction(R.drawable.ic_power, "Stop Service", actionPendingIntent)
                 .build();
         startForeground(1, notification);
         //todo click event for opening activity
@@ -130,10 +133,15 @@ public class SimDetectorService extends Service implements SharedPreferences.OnS
                     continue;
                 }
                 if (taskKey == INIT_TASK_VALUE) {
-                    firstNumber = AppPreference.SimPreference.getFirstNumber(getApplicationContext());
-                    secondNumber = AppPreference.SimPreference.getSecondNumber(getApplicationContext());
-                    defaultMessage = AppPreference.SimPreference.getSimMessage(getApplicationContext());
-                    previousSimInfo = AppPreference.SimPreference.getSimIccS(getApplicationContext());
+                    try {
+                        firstNumber = AppPreference.SimPreference.getFirstNumber(getApplicationContext());
+                        secondNumber = AppPreference.SimPreference.getSecondNumber(getApplicationContext());
+                        defaultMessage = AppPreference.SimPreference.getSimMessage(getApplicationContext());
+                        previousSimInfo = AppPreference.SimPreference.getSimIccS(getApplicationContext());
+                    } catch (Exception e) {
+                        Log.d(TAG, "run: error : " + e.getMessage());
+                        e.printStackTrace();
+                    }
                 } else if (taskKey == CHECK_SIM_STATUS_TASK) {
                     List<SimCardInfoModel> currentSimCardInfo = SimCardInfoModel.getSimInfoS(getApplicationContext());
                     if (currentSimCardInfo != null && previousSimInfo != null) {

@@ -7,7 +7,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.Settings;
@@ -21,8 +22,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.softgyan.findcallers.R;
+import com.softgyan.findcallers.callback.OnResultCallback;
+import com.softgyan.findcallers.callback.OnSuccessfulCallback;
+import com.softgyan.findcallers.callback.OnUploadCallback;
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.query.ContactsQuery;
+import com.softgyan.findcallers.firebase.FirebaseDB;
+import com.softgyan.findcallers.firebase.FirebaseVar;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
@@ -34,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 public final class Utils {
@@ -278,17 +285,13 @@ public final class Utils {
      * @return if connection available return true otherwise false;
      */
     public static boolean isInternetConnectionAvailable(Context context) {
-        boolean isConnected = false;
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        if (activeNetwork != null) {
-            // connected to the internet
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI ||
-                    activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
-                isConnected = true;
-            }
-        }
-        return isConnected;
+        ConnectivityManager conMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        Network network = conMgr.getActiveNetwork();
+        NetworkCapabilities networkCapabilities = conMgr.getNetworkCapabilities(network);
+        if (networkCapabilities != null) {
+            return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        } else return false;
     }
 
 
@@ -363,4 +366,16 @@ public final class Utils {
     private static double deg2rad(double deg) {
         return deg * (Math.PI / 180);
     }
+
+
+    public static String getDate(Date currentDateTime) {
+        return new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(currentDateTime);
+    }
+
+    public static String getTime(Date currentDateTime) {
+        return new SimpleDateFormat("H:mm", Locale.getDefault()).format(currentDateTime);
+    }
+
+
+
 }

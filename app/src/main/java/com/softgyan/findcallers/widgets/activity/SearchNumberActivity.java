@@ -1,6 +1,8 @@
 package com.softgyan.findcallers.widgets.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -205,6 +207,25 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         ibClear.setOnClickListener(this);
 
         pDialog = new ProgressDialog(this);
+
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+                final String number = invalidateNumber(sharedText);
+                if (number != null) {
+                    etSearch.setText(number);
+                    Utils.hideViews(cardView);
+                    searchOperation();
+                } else {
+                    Toast.makeText(this, "invalid mobile number", Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+        }
     }
 
     private String getMobileNumber() {
@@ -219,36 +240,60 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
 
     private void setValueToView(final ContactModel contactModel) {
         Utils.showViews(cardView);
+        try {
 
-        if (contactModel.getName() != null) {
-            tvName.setText(contactModel.getName());
-        } else {
-            tvName.setText(NOT_AVAILABLE);
-        }
-        if (contactModel.getEmailId() != null) {
-            tvEmail.setText(contactModel.getEmailId());
-        } else {
-            tvEmail.setText(NOT_AVAILABLE);
-        }
-        tvMobile.setText(contactModel.getContactNumbers().get(0).getMobileNumber());
-        if (contactModel.getImage() != null) {
-            Glide.with(this).load(contactModel.getImage()).into(imageView);
-        }
-        if (contactModel.getAddress() != null) {
-            tvAddress.setText((contactModel.getAddress()));
-        } else {
-            tvAddress.setText(NOT_AVAILABLE);
-        }
+            if (contactModel.getName() != null) {
+                tvName.setText(contactModel.getName());
+            } else {
+                tvName.setText(NOT_AVAILABLE);
+            }
+            if (contactModel.getEmailId() != null) {
+                tvEmail.setText(contactModel.getEmailId());
+            } else {
+                tvEmail.setText(NOT_AVAILABLE);
+            }
+            tvMobile.setText(contactModel.getContactNumbers().get(0).getMobileNumber());
+            if (contactModel.getImage() != null) {
+                Glide.with(this).load(contactModel.getImage()).into(imageView);
+            }
+            if (contactModel.getAddress() != null) {
+                tvAddress.setText((contactModel.getAddress()));
+            } else {
+                tvAddress.setText(NOT_AVAILABLE);
+            }
 
-        if (isSpam || isBlock) {
-            Utils.hideViews(btnAddToBlock);
-        } else {
-            Utils.showViews(btnAddToBlock);
+            if (isSpam || isBlock) {
+                Utils.hideViews(btnAddToBlock);
+            } else {
+                Utils.showViews(btnAddToBlock);
+            }
+            if (isNumberSave) {
+                Utils.hideViews(btnSaveToContact);
+            } else {
+                Utils.showViews(btnSaveToContact);
+            }
+        }catch (Exception e){
+            Log.d(TAG, "setValueToView: error : "+e.getMessage());
         }
-        if (isNumberSave) {
-            Utils.hideViews(btnSaveToContact);
-        } else {
-            Utils.showViews(btnSaveToContact);
+    }
+
+    private String invalidateNumber(String number) {
+        Log.d(TAG, "invalidateNumber: number_1 : "+number);
+        if (number == null || number.length() <10 || number.length() > 15) {
+            return null;
         }
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < number.length(); i++) {
+            if (number.charAt(i) >= '0' && number.charAt(i) <= '9') {
+                sb.append(number.charAt(i));
+            }
+        }
+        Log.d(TAG, "invalidateNumber: number_2 : "+sb.toString());
+        if (sb.length() >= 10 && sb.length() <= 15) {
+            return sb.toString();
+        }
+        return null;
+
     }
 }

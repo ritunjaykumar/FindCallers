@@ -8,14 +8,19 @@ import android.net.Uri;
 import android.os.Build;
 import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 
+import com.softgyan.findcallers.callback.OnUploadCallback;
+import com.softgyan.findcallers.preferences.AppPreference;
+import com.softgyan.findcallers.utils.CallUtils;
 import com.softgyan.findcallers.utils.Utils;
+import com.softgyan.findcallers.widgets.dialog.ShowCallInfoDialog;
 
 public final class CallHardware {
+    private static final String TAG = "CallHardware";
     public static final int INVALID_SIM_INFO = -1;
     public static final int SIM_ABSENT = 0;
     public static final int SIM_NETWORK_LOCKED = 1;
@@ -41,6 +46,34 @@ public final class CallHardware {
     }
 
     public static void makeCall(@NonNull Context context, @NonNull String number) {
+        if (!AppPreference.getCallNotification(context)) {
+            Toast.makeText(context, "call Notification off", Toast.LENGTH_SHORT).show();
+            doCall(context, number);
+            return;
+        }
+        if (!Utils.isInternetConnectionAvailable(context)) {
+            doCall(context, number);
+            Toast.makeText(context, "check internet connection", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        CallUtils.getCallNotification(context, number, new OnUploadCallback() {
+            @Override
+            public void onUploadSuccess(String message) {
+                Log.d(TAG, "onUploadSuccess: message : " + message);
+                new ShowCallInfoDialog(context).showDialog(message, number);
+            }
+
+            @Override
+            public void onUploadFailed(String failedMessage) {
+                Log.d(TAG, "onUploadFailed: failed Message : " + failedMessage);
+                doCall(context, number);
+            }
+        });
+
+    }
+
+    private static void doCall(Context context, @NonNull String number) {
         if (isPhoneSupportTelephony(context)) {
             if (SimDetails.getSimState(context) == SIM_READY) {
                 Intent callIntent = new Intent(Intent.ACTION_CALL);
@@ -58,8 +91,8 @@ public final class CallHardware {
 
     public static boolean cutTheCall(Context context) {
         TelecomManager telecomManager = (TelecomManager) context.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
-        String[] permission ={Manifest.permission.READ_PHONE_STATE};
-        if(!Utils.checkPermission(context,permission)){
+        String[] permission = {Manifest.permission.READ_PHONE_STATE};
+        if (!Utils.checkPermission(context, permission)) {
             return false;
         }
 
