@@ -132,12 +132,12 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
         public void onSuccessLogin() {
             mDialog.dismiss();
             if (isDelete) {
-                AppPreference.setLogin(AccountActivity.this, true);
                 Intent intent = new Intent();
                 intent.putExtra("extra", 1);
                 setResult(Activity.RESULT_OK, intent);
                 finish();
             } else {
+                AppPreference.setLogin(AccountActivity.this, true);
                 Toast.makeText(AccountActivity.this, "login successful", Toast.LENGTH_SHORT).show();
                 Utils.openActivity(AccountActivity.this, WelcomeActivity.class, true);
             }

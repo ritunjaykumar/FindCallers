@@ -225,10 +225,14 @@ public final class FirebaseDB {
                     .document(mobileNumber)
                     .get()
                     .addOnSuccessListener(ds -> {
+
+
                         String name = ds.getString(FirebaseVar.MobileNumber.USER_NAME);
                         String address = ds.getString(FirebaseVar.MobileNumber.ADDRESS);
                         String profileUrl = ds.getString(FirebaseVar.MobileNumber.PROFILE_URL);
                         String userEmail = ds.getString(FirebaseVar.MobileNumber.USER_EMAIL);
+                        Log.d(TAG, "getMobileNumber: doc id : " + ds.getId());
+
 
                         ContactModel contactModel = new ContactModel(name);
                         contactModel.setImage(profileUrl);
@@ -282,15 +286,24 @@ public final class FirebaseDB {
                 @Override
                 public void onFailed(String failedMessage) {
                     //not exits
-                    FirebaseBasic.uploadData(FirebaseVar.SpamDB.SPAM_DB_NAME, mobileNumber, spamMap, new OnUploadCallback() {
+
+                    HashMap<String, Object> tempSpam = new HashMap<>();
+                    tempSpam.put(FirebaseVar.SpamDB.NAME + 1, spamMap.get(FirebaseVar.SpamDB.NAME));
+                    tempSpam.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY + 1, spamMap.get(FirebaseVar.SpamDB.SPAM_TYPE_KEY));
+                    tempSpam.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, 1);
+                    tempSpam.put(FirebaseVar.SpamDB.TOTAL_NAME, 1);
+
+                    FirebaseBasic.uploadData(FirebaseVar.SpamDB.SPAM_DB_NAME, mobileNumber, tempSpam, new OnUploadCallback() {
                         @Override
                         public void onUploadSuccess(String message) {
-                            callback.onUploadSuccess(message);
+                            if (callback != null)
+                                callback.onUploadSuccess(message);
                         }
 
                         @Override
                         public void onUploadFailed(String failedMessage) {
-                            callback.onUploadFailed(failedMessage);
+                            if (callback != null)
+                                callback.onUploadFailed(failedMessage);
                         }
                     });
 
@@ -334,23 +347,31 @@ public final class FirebaseDB {
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         final List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
                         Log.d(TAG, "getDoctorRecord: documents size : " + documents.size());
+                        boolean flag = true;
                         for (DocumentSnapshot ds : documents) {
                             GeoPoint geoPoint = ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT);
-                            if (geoPoint == null) continue;
+                            if (geoPoint == null) {
+                                continue;
+                            }
+                            flag = false;
                             double sRange = Utils.getDistanceFromLatLonInKm(lat, lon,
                                     geoPoint.getLatitude(), geoPoint.getLongitude());
                             Log.d(TAG, "getDoctorRecord: sRange : " + sRange);
                             if (sRange <= range) {
-                                final DoctorModel doctorDetails = getDoctorDetails(ds);
+                                final DoctorModel doctorDetails = getDoctorDetails(ds, sRange);
                                 doctorList.add(doctorDetails);
                             }
                         }
-                        callback.onSuccess(doctorList);
+                        if(flag){
+                            callback.onFailed("Record not found");
+                        }else {
+                            callback.onSuccess(doctorList);
+                        }
                     })
                     .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
         }
 
-        private static DoctorModel getDoctorDetails(DocumentSnapshot ds) {
+        private static DoctorModel getDoctorDetails(DocumentSnapshot ds, double distance) {
             return new DoctorModel(
                     ds.getString(FirebaseVar.Doctor.AREA),
                     ds.getString(FirebaseVar.Doctor.PIN_CODE),
@@ -361,7 +382,8 @@ public final class FirebaseDB {
                     ds.getString(FirebaseVar.Doctor.NAME),
                     ds.getString(FirebaseVar.Doctor.GENDER),
                     ds.getString(FirebaseVar.Doctor.CONTACT),
-                    ds.getString(FirebaseVar.Doctor.DOCTOR_TYPE)
+                    ds.getString(FirebaseVar.Doctor.DOCTOR_TYPE),
+                    distance
             );
         }
 
@@ -375,25 +397,31 @@ public final class FirebaseDB {
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
                         final List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
+                        boolean flag = true;
                         for (DocumentSnapshot ds : documents) {
                             GeoPoint geoPoint = ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT);
                             if (geoPoint == null) {
                                 continue;
                             }
+                            flag = false;
                             double sRange = Utils.getDistanceFromLatLonInKm(lat, lon,
                                     geoPoint.getLatitude(), geoPoint.getLongitude());
                             if (sRange <= range) {
-                                final ElectricianModel electricianDetails = getElectricianDetails(ds);
+                                final ElectricianModel electricianDetails = getElectricianDetails(ds, sRange);
                                 electricianList.add(electricianDetails);
                             }
-                            callback.onSuccess(electricianList);
 
+                        }
+                        if (flag) {
+                            callback.onFailed("no record found");
+                        }else {
+                            callback.onSuccess(electricianList);
                         }
                     })
                     .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
         }
 
-        private static ElectricianModel getElectricianDetails(DocumentSnapshot ds) {
+        private static ElectricianModel getElectricianDetails(DocumentSnapshot ds, double distance) {
 
             return new ElectricianModel(
                     ds.getString(FirebaseVar.Doctor.AREA),
@@ -404,7 +432,8 @@ public final class FirebaseDB {
                     ds.getString(FirebaseVar.Doctor.MAP_LOCATION),
                     ds.getString(FirebaseVar.Doctor.NAME),
                     ds.getString(FirebaseVar.Doctor.GENDER),
-                    ds.getString(FirebaseVar.Doctor.CONTACT)
+                    ds.getString(FirebaseVar.Doctor.CONTACT),
+                    distance
             );
         }
 

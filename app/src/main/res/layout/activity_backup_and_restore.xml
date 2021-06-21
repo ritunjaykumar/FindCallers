@@ -30,39 +30,16 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:letterSpacing="0.05"
-                android:text="Backup"
+                android:text="Contact Backup"
                 android:textColor="@color/white"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 tools:ignore="HardcodedText" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <CheckBox
-                    android:id="@+id/cbContact"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:letterSpacing="0.08"
-                    android:text="Contact"
-                    android:textColor="@color/white"
-                    tools:ignore="HardcodedText" />
-
-                <CheckBox
-                    android:id="@+id/cbCallLog"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:letterSpacing="0.08"
-                    android:text="Call Log"
-                    android:textColor="@color/white"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
 
             <Button
                 android:id="@+id/btnBackup"
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
@@ -71,6 +48,15 @@
                 android:text="Backup"
                 android:textAllCaps="false"
                 android:textSize="18sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/tvContactLocation_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="file location.."
+                android:textColor="@android:color/darker_gray"
                 tools:ignore="HardcodedText" />
 
 
@@ -103,15 +89,6 @@
                 android:textSize="18sp"
                 tools:ignore="HardcodedText" />
 
-            <TextView
-                android:id="@+id/textView4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:letterSpacing="0.08"
-                android:text="Contact"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                tools:ignore="HardcodedText" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -119,21 +96,13 @@
                 android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/btnSelectContactFile"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="Select file"
-                    android:textAllCaps="false"
-                    tools:ignore="HardcodedText" />
-
-                <Button
                     android:id="@+id/btnRestoreContact"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
+                    android:textSize="18sp"
                     android:layout_weight="1"
+                    android:background="@drawable/circular_background"
                     android:text="Restore Contact"
                     android:textAllCaps="false"
                     tools:ignore="HardcodedText" />
@@ -141,56 +110,13 @@
 
 
             <TextView
-                android:id="@+id/tvContactLocation"
+                android:id="@+id/tvContactLocation_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="file location.."
                 android:textColor="@android:color/darker_gray"
                 tools:ignore="HardcodedText" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:letterSpacing="0.08"
-                android:text="Call Log"
-                android:textColor="@color/white"
-                android:textSize="18sp"
-                tools:ignore="HardcodedText" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnSelectCallFile"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="Select file"
-                    android:textAllCaps="false"
-                    tools:ignore="HardcodedText" />
-
-                <Button
-                    android:id="@+id/btnRestoreCallLog"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="Restore Call Log"
-                    android:textAllCaps="false"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvCallLogLocation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="file location.."
-                android:textColor="@android:color/darker_gray"
-                tools:ignore="HardcodedText" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

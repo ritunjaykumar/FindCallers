@@ -7,7 +7,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -32,6 +31,8 @@ import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallNumberModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
+import com.softgyan.findcallers.preferences.AppPreference;
+import com.softgyan.findcallers.utils.CallRecorder;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.dialog.CallerDialog;
 
@@ -45,8 +46,6 @@ public class CallManagerServices extends Service {
     public static final String CALL_NOTIFIER_RECEIVER_ACTION = "com.softgyan.findcallers.CALL_NOTIFY_RECEIVER";
     public static final String CALL_KEY = "callKey";
     public static final String MOBILE_NUMBER = "mobileNumber";
-    public static final String INCOMING_DATE = "incomingDate";
-    public static final String SIM_ID = "simId";
     public static final String IS_OUT_GOING = "isOutGoing";
 
     public static final int CALL_INITIATE = 1;
@@ -62,7 +61,6 @@ public class CallManagerServices extends Service {
 
 
     private volatile Intent callIntent = null;
-    private CountDownTimer countDownTimer;
     private int lastUpdate = -1;
     private String mobNumber;
     private CallerDialog callerDialog;
@@ -70,34 +68,36 @@ public class CallManagerServices extends Service {
     private CallerInfoModel callerInfoModels;
     private ContactModel mContactModel;
 
+
+    //for recording call
+    private CallRecorder callRecorder;
+    private boolean isCallRecorderEnable = false;
+    //
+
+
     @Override
     public void onCreate() {
         super.onCreate();
         registerCallReceiver();
         callerDialog = new CallerDialog(getApplicationContext());
         Log.d(TAG, "onCreate: service created");
-        countDownTimer = new CountDownTimer(25000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-
-            }
-
-            @Override
-            public void onFinish() {
-
-            }
-        };
+        isCallRecorderEnable = AppPreference.isCallRecordingEnable(this);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startServiceNotification();
         callIntent = intent;
+
         if (callIntent != null) {
+            if (isCallRecorderEnable)
+                callRecorder = new CallRecorder(this);
             callThread.start();
         } else {
             stopService();
         }
+
+        //callRecording
 
         return START_NOT_STICKY;
     }
@@ -155,19 +155,26 @@ public class CallManagerServices extends Service {
                     /*
                      * show dialog on call screen+
                      */
+
                     Log.d(TAG, "run: callValue : " + "CALL_INITIATE");
                     isCallInitiate = true;
                     lastUpdate = callValue;
                     isOutgoing = callIntent.getBooleanExtra(IS_OUT_GOING, false);
                     mobNumber = callIntent.getStringExtra(MOBILE_NUMBER);
                     searchNumber(mobNumber);
+
                 } else if (callValue == CALL_HOOKED) {
                     /*
                      * start call recording if enabled
                      */
+                    if (isCallRecorderEnable) {
+                        if (callRecorder != null)
+                            callRecorder.startRecording();
+                    }
                     Log.d(TAG, "run: called hooked");
                     lastUpdate = callValue;
                     isHooked = true;
+
 
                 } else if (callValue == CALL_END) {
                     /*
@@ -176,6 +183,11 @@ public class CallManagerServices extends Service {
                      * stop service+
                      * break the loop+
                      * */
+                    if (isCallRecorderEnable) {
+                        if (callRecorder != null)
+                            callRecorder.stopRecording();
+                    }
+
                     Log.d(TAG, "run: call end");
                     lastUpdate = callValue;
                     if (!isSpam) {
@@ -193,6 +205,11 @@ public class CallManagerServices extends Service {
                     showDialogOverCall(callerInfoModels, true);
                     saveLastCallHistory(getApplicationContext(), mobNumber);
                     stopService();
+                    try {
+                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
 
@@ -274,25 +291,25 @@ public class CallManagerServices extends Service {
 
     private void saveLastCallHistory(Context context, String number) {
         final CallModel lastCallHistory = SystemCalls.getLastCallHistory(context);
-        Log.d(TAG, "onReceive: lastCallHistory : " + lastCallHistory);
+//        Log.d(TAG, "onReceive: lastCallHistory : " + lastCallHistory);
         if (lastCallHistory == null) {
             return;
         }
-        Log.d(TAG, "saveLastCallHistory: searched number : " + mContactModel);
+//        Log.d(TAG, "saveLastCallHistory: searched number : " + mContactModel);
 
         final CallModel callModel = CallQuery.searchCallHistoryByNumber(context, number);
-        Log.d(TAG, "saveLastCallHistory: searched number from Local : " + callModel);
+//        Log.d(TAG, "saveLastCallHistory: searched number from Local : " + callModel);
         if (callModel != null) {
 
             CallNumberModel lastCallNumberModel = lastCallHistory.getFirstCall();
             lastCallNumberModel.setNameRefId(callModel.getNameId());
             final int i = CallQuery.insertCallNumberLog(getApplicationContext(), lastCallNumberModel);
             if (i == 0) {
-                Log.d(TAG, "saveLastCallHistory: number not save : " + lastCallNumberModel);
+//                Log.d(TAG, "saveLastCallHistory: number not save : " + lastCallNumberModel);
                 lastCallNumberModel.setCallModelId(i);
                 Utils.setCallLogToList(lastCallHistory);
             } else {
-                Log.d(TAG, "saveLastCallHistory: number save : " + lastCallNumberModel);
+//                Log.d(TAG, "saveLastCallHistory: number save : " + lastCallNumberModel);
             }
         } else {
             if (mContactModel != null) {
@@ -304,7 +321,7 @@ public class CallManagerServices extends Service {
                 lastCallHistory.setCacheName("unknown_" + number);
             }
             CallQuery.insertCallLog(getApplicationContext(), lastCallHistory);
-            Log.d(TAG, "saveLastCallHistory: after save operation : " + lastCallHistory);
+//            Log.d(TAG, "saveLastCallHistory: after save operation : " + lastCallHistory);
 
         }
         Utils.setCallLogToList(lastCallHistory);

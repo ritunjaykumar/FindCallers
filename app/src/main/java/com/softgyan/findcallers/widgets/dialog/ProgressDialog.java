@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,8 +20,16 @@ public class ProgressDialog extends Dialog {
         setContentView(R.layout.progress_layout);
         setCancelable(false);
         title = findViewById(R.id.tv_title);
-
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+    }
+
+    public ProgressDialog(@NonNull Context context, OnCancelListener cancelListener) {
+        this(context);
+        Button btnCancel = findViewById(R.id.btnCancel);
+        Utils.showViews(btnCancel);
+        btnCancel.setOnClickListener(v->{
+            cancelListener.onCancel(this);
+        });
     }
 
     public void setProgressTitle(String progressTitle) {
@@ -30,5 +39,10 @@ public class ProgressDialog extends Dialog {
         }
         title.setText(progressTitle);
         Utils.showViews(title);
+    }
+
+
+    public interface OnCancelListener {
+        void onCancel(ProgressDialog dialog);
     }
 }

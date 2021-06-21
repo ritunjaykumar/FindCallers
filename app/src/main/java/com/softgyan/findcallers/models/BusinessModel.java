@@ -11,13 +11,23 @@ public abstract class BusinessModel extends Address implements Serializable {
     private String name;
     private String contact;
     private String gender;
+    private double distance;
 
     public BusinessModel(String area, String pinCode, String state, String district, GeoPoint point,
-                         String mapLocation, String name, String gender,  String contact) {
+                         String mapLocation, String name, String gender,  String contact, double distance) {
         super(area, pinCode, state, district, point, mapLocation);
         this.name = name;
         this.contact = contact;
         this.gender = gender;
+        this.distance = distance;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
     }
 
     public String getName() {

@@ -175,8 +175,8 @@ public class CallFragment extends Fragment {
 
         HashMap<String, Object> spamMap = new HashMap<>();
         spamMap.put(FirebaseVar.SpamDB.MOBILE_NUMBER, callModel.getCallNumberList().get(0).getNumber());
-        spamMap.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY + 1, "fraud");
-        spamMap.put(FirebaseVar.SpamDB.NAME + 1, callModel.getCacheName());
+        spamMap.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY, "fraud");
+        spamMap.put(FirebaseVar.SpamDB.NAME , callModel.getCacheName());
         spamMap.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, 1);
         spamMap.put(FirebaseVar.SpamDB.TOTAL_NAME, 1);
 

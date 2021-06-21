@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
@@ -29,6 +30,18 @@
             android:textColor="@color/colorSecondary"
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:textAllCaps="false"
+            android:layout_margin="4dp"
+            android:visibility="gone"
+            android:textSize="14sp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

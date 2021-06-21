@@ -10,8 +10,8 @@ public class DoctorModel extends BusinessModel implements Serializable {
     private String doctorType;
 
     public DoctorModel(String area, String pinCode, String state, String district, GeoPoint point,
-                       String mapLocation, String name, String gender, String contact, String doctorType) {
-        super(area, pinCode, state, district, point, mapLocation, name, gender, contact);
+                       String mapLocation, String name, String gender, String contact, String doctorType, double distance) {
+        super(area, pinCode, state, district, point, mapLocation, name, gender, contact, distance);
         this.doctorType = doctorType;
     }
 

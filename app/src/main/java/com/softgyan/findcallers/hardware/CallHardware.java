@@ -73,7 +73,7 @@ public final class CallHardware {
 
     }
 
-    private static void doCall(Context context, @NonNull String number) {
+    public static void doCall(Context context, @NonNull String number) {
         if (isPhoneSupportTelephony(context)) {
             if (SimDetails.getSimState(context) == SIM_READY) {
                 Intent callIntent = new Intent(Intent.ACTION_CALL);

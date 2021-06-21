@@ -96,7 +96,6 @@
                 android:textColor="@color/colorSecondary"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                app:drawableEndCompat="@drawable/ic_edit"
                 app:drawableTint="@color/accent"
                 tools:ignore="HardcodedText" />
 

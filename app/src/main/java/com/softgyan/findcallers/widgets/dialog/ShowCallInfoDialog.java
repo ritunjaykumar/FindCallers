@@ -58,8 +58,10 @@ public class ShowCallInfoDialog implements View.OnClickListener {
     }
 
     public void showDialog(String message, @NonNull String number) {
-        TextView textView = view.findViewById(R.id.tvCallMessage);
-        textView.setText(message);
+        TextView tvMessage = view.findViewById(R.id.tvCallMessage);
+        TextView tvNumber = view.findViewById(R.id.tvNumber);
+        tvMessage.setText(message);
+        tvNumber.setText(number);
         this.number = number;
         view.findViewById(R.id.tvCall).setOnClickListener(this);
         view.findViewById(R.id.tvMessage).setOnClickListener(this);
@@ -72,7 +74,7 @@ public class ShowCallInfoDialog implements View.OnClickListener {
     public void onClick(View v) {
         int id = v.getId();
         if (id == R.id.tvCall) {
-            CallHardware.makeCall(context, number);
+            CallHardware.doCall(context, number);
         } else if (id == R.id.tvMessage) {
             CallUtils.sendMessageIntent(context, number);
         }

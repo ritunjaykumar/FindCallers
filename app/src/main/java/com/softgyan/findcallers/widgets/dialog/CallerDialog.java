@@ -115,7 +115,11 @@ public final class CallerDialog implements View.OnClickListener {
     }
 
     private void closeWindowManager() {
-        windowManager.removeView(view);
+        try {
+            windowManager.removeView(view);
+        } catch (Exception e) {
+            Log.d(TAG, "closeWindowManager: exception : " + e.getMessage());
+        }
     }
 
     @Override
@@ -132,6 +136,7 @@ public final class CallerDialog implements View.OnClickListener {
             intent.putExtra(SaveContactReceiver.MODE, SaveContactReceiver.BLOCK_NUMBER);
             intent.putExtra(SaveContactReceiver.NAME, callerInfo.getName());
             context.sendBroadcast(intent);
+
 
         }
         closeWindowManager();

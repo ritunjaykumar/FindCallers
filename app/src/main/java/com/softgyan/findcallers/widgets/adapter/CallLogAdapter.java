@@ -2,6 +2,7 @@ package com.softgyan.findcallers.widgets.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +36,7 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
     private final List<CallModel> callModelListBackup;
     private final Context mContext;
     private final CallLogCallback logCallback;
-    private boolean flag = false;
+    private final boolean flag;
 
     public CallLogAdapter(Context context, final List<CallModel> callModelList, final boolean flag,
                           final CallLogCallback logCallback) {
@@ -91,6 +92,7 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
         }
 
         final int subscriptionId = CallUtils.getSubscriptionId(mContext, callNumber.getIccId());
+
         switch (subscriptionId) {
             case CommVar.SIM_ONE: {
                 holder.ivSimId.setImageResource(R.drawable.sim_1);

@@ -116,17 +116,21 @@ public class BusinessActivity extends AppCompatActivity {
                 }
             });
         } else if (data.getType() == BusinessRecord.ELECTRICIAN_TYPE) {
-            FirebaseDB.Business.uploadElectricianRecord(data.getElectricianList().get(0), new OnUploadCallback() {
-                @Override
-                public void onUploadSuccess(String message) {
-                    toastMessage("saved data");
-                }
+            try {
+                FirebaseDB.Business.uploadElectricianRecord(data.getElectricianList().get(0), new OnUploadCallback() {
+                    @Override
+                    public void onUploadSuccess(String message) {
+                        toastMessage("saved data");
+                    }
 
-                @Override
-                public void onUploadFailed(String failedMessage) {
-                    toastMessage(failedMessage);
-                }
-            });
+                    @Override
+                    public void onUploadFailed(String failedMessage) {
+                        toastMessage(failedMessage);
+                    }
+                });
+            }catch (Exception ex){
+                Log.d(TAG, "saveRecord: error "+ ex.getMessage());
+            }
         }
     }
 
@@ -221,14 +225,14 @@ public class BusinessActivity extends AppCompatActivity {
         if (isDoctorSelected) {
             List<DoctorModel> doctorModelList = new ArrayList<>();
             DoctorModel doctorModel = new DoctorModel(strVillage, strPin, strState, strDistrict,
-                    point, null, strName, strGender, strContactNumber, strDoctorType);
+                    point, null, strName, strGender, strContactNumber, strDoctorType, -1);
             doctorModelList.add(doctorModel);
             businessRecord = new BusinessRecord(BusinessRecord.DOCTOR_TYPE, doctorModelList);
 
         } else {
             List<ElectricianModel> electricianModels = new ArrayList<>();
             ElectricianModel electricianModel = new ElectricianModel(strVillage, strPin, strState,
-                    strDistrict, point, null, strName, strGender, strContactNumber);
+                    strDistrict, point, null, strName, strGender, strContactNumber, -1);
             electricianModels.add(electricianModel);
             businessRecord = new BusinessRecord(electricianModels, BusinessRecord.ELECTRICIAN_TYPE);
         }

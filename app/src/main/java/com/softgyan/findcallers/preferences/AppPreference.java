@@ -128,4 +128,13 @@ public final class AppPreference {
     public static synchronized boolean getCallNotification(Context context) {
         return getSharedPref(context).getBoolean(CALL_NOTIFICATION_KEY, false);
     }
+
+    private static final String CALL_RECORDING_KEY = "callRecordingKey";
+    public static synchronized boolean isCallRecordingEnable(Context context){
+        return getSharedPref(context).getBoolean(CALL_RECORDING_KEY,false);
+    }
+
+    public static synchronized void setCallRecording(Context context, boolean callNotification){
+        getSharedEditor(context).putBoolean(CALL_RECORDING_KEY, callNotification).apply();
+    }
 }

@@ -32,9 +32,10 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/drawable/sheet_background.xml" value="0.22447916666666667" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_account.xml" value="0.25" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_all_call_history.xml" value="0.5" />
-        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_backup_and_restore.xml" value="0.2" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_backup_and_restore.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_block_number.xml" value="0.2" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_business.xml" value="0.25" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_business_details.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_call_notification.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_contact_detail.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/activity_example.xml" value="0.209375" />
@@ -68,7 +69,7 @@
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_single_value_dialog.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/layout_temp.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/nav_header.xml" value="0.33" />
-        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/progress_layout.xml" value="0.209375" />
+        <entry key="..\:/androidProject/FindCallers/app/src/main/res/layout/progress_layout.xml" value="0.33" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/menu/call_log_menu.xml" value="0.20833333333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/menu/delete_menu.xml" value="0.20833333333333334" />
         <entry key="..\:/androidProject/FindCallers/app/src/main/res/menu/main_side_menu.xml" value="0.209375" />

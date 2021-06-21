@@ -3,6 +3,7 @@ package com.softgyan.findcallers.utils;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.icu.util.Calendar;
 import android.net.Uri;
 import android.telephony.SmsManager;
 import android.util.Log;
@@ -16,6 +17,7 @@ import com.softgyan.findcallers.firebase.FirebaseVar;
 import com.softgyan.findcallers.models.SimCardInfoModel;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -68,7 +70,10 @@ public final class CallUtils {
         if (!Utils.isInternetConnectionAvailable(context)) {
             return;
         }
-        Log.d(TAG, "getCallNotification: mobile number");
+        Calendar calendar = Calendar.getInstance();
+        final Date today = calendar.getTime();
+
+
         FirebaseDB.CallNotification.getCallNotification(context, mobileNumber, new OnResultCallback<HashMap<String, Object>>() {
             @Override
             public void onSuccess(@NonNull HashMap<String, Object> stringObjectHashMap) {
@@ -80,7 +85,7 @@ public final class CallUtils {
 
                 if (startDate != null && startTime != null && endDate != null && endTime != null && sMessage != null) {
 
-                    final boolean compareDate = compareDate(startTime, startDate, endTime, endDate);
+                    final boolean compareDate = compareDate(Utils.getTime(today), Utils.getDate(today), endTime, endDate);
                     Log.d(TAG, "onSuccess: compare date : "+compareDate);
                     if (compareDate) {
                         callback.onUploadSuccess(sMessage + " till " + endTime);

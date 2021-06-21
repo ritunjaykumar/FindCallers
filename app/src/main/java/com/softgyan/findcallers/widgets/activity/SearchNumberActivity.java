@@ -149,8 +149,8 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
 
         HashMap<String, Object> spamMap = new HashMap<>();
         spamMap.put(FirebaseVar.SpamDB.MOBILE_NUMBER, mobileNumber);
-        spamMap.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY + 1, "fraud");
-        spamMap.put(FirebaseVar.SpamDB.NAME + 1, name);
+        spamMap.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY, "fraud");
+        spamMap.put(FirebaseVar.SpamDB.NAME, name);
         spamMap.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, 1);
         spamMap.put(FirebaseVar.SpamDB.TOTAL_NAME, 1);
 
@@ -176,7 +176,7 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
             blockModel.setName(name);
             blockModel.setType(SpamContract.SPAM_TYPE);
             final int i = SpamQuery.insertBlockList(this, blockModel);
-            if (i == 1) {
+            if (i != 1) {
                 Toast.makeText(this, "inserted into " + message, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "not inserted into " + message, Toast.LENGTH_SHORT).show();
@@ -272,14 +272,15 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
             } else {
                 Utils.showViews(btnSaveToContact);
             }
-        }catch (Exception e){
-            Log.d(TAG, "setValueToView: error : "+e.getMessage());
+        } catch (Exception e) {
+            Log.d(TAG, "setValueToView: error : " + e.getMessage());
+            Utils.hideViews(btnAddToBlock, btnAddToSpam, btnSaveToContact);
         }
     }
 
     private String invalidateNumber(String number) {
-        Log.d(TAG, "invalidateNumber: number_1 : "+number);
-        if (number == null || number.length() <10 || number.length() > 15) {
+        Log.d(TAG, "invalidateNumber: number_1 : " + number);
+        if (number == null || number.length() < 10 || number.length() > 15) {
             return null;
         }
         StringBuilder sb = new StringBuilder();
@@ -289,7 +290,7 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
                 sb.append(number.charAt(i));
             }
         }
-        Log.d(TAG, "invalidateNumber: number_2 : "+sb.toString());
+        Log.d(TAG, "invalidateNumber: number_2 : " + sb.toString());
         if (sb.length() >= 10 && sb.length() <= 15) {
             return sb.toString();
         }

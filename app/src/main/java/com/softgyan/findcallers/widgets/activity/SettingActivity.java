@@ -71,6 +71,13 @@ public class SettingActivity extends AppCompatActivity implements View.OnClickLi
             AppPreference.setCallNotification(SettingActivity.this, isChecked);
 
         });
+
+
+        SwitchCompat callRecorderSwitch = findViewById(R.id.switch2);
+        callRecorderSwitch.setChecked(AppPreference.isCallRecordingEnable(this));
+        callRecorderSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            AppPreference.setCallRecording(SettingActivity.this, isChecked);
+        });
     }
 
     @Override

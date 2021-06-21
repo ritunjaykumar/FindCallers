@@ -191,30 +191,6 @@ public final class Utils {
     }
 
 
-    public synchronized static List<HashMap<String, Object>> getAllContactForBackup(Context context) {
-        if (context == null) return null;
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CONTACTS) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(context, "Read and write contacts permission is denied", Toast.LENGTH_SHORT).show();
-            return null;
-        }
-        final List<HashMap<String, Object>> backupContactList = new ArrayList<>();
-        final Uri CONTACT_BASE_URI = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-        Cursor cursor = context.getContentResolver().query(CONTACT_BASE_URI, null, null, null, null);
-
-        final String[] columnNames = cursor.getColumnNames();
-        while (cursor.moveToNext()) {
-            HashMap<String, Object> mapContact = new HashMap<>();
-            for (String columnName : columnNames) {
-                mapContact.put(columnName, cursor.getColumnIndex(columnName));
-            }
-            backupContactList.add(mapContact);
-
-        }
-        cursor.close();
-        return backupContactList;
-    }
-
 
     public static boolean requestOverlayPermission(Context context) {
         return !Settings.canDrawOverlays(context);

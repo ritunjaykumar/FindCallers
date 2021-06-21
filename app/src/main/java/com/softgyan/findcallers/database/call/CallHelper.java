@@ -48,7 +48,6 @@ public class CallHelper extends SQLiteOpenHelper {
                 CallDetails.CALL_COLUMN_DATE + " TEXT NOT NULL, " +
                 CallDetails.CALL_COLUMN_TYPE + " INTEGER NOT NULL, " +
                 CallDetails.CALL_COLUMN_DURATION + " INTEGER NOT NULL, " +
-//                CallDetails.CALL_COLUMN_SUBSCRIPTION_ID + " INTEGER NOT NULL, " +
                 CallDetails.CALL_COLUMN_SUBSCRIPTION_ID + " TEXT NOT NULL, " +
                 "FOREIGN KEY(" + CallDetails.CALL_COLUMN_NAME_REF_ID + ") REFERENCES " + CallDetails.CACHE_NAME_TABLE + "(" + CallDetails.CACHE_NAME_ID + ")" +
                 ")";

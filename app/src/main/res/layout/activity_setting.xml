@@ -32,6 +32,19 @@
             android:text="Open CallNotification"
             tools:ignore="HardcodedText" />
 
+
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="Auto Call Recorder"
+            tools:ignore="HardcodedText" />
+
     </LinearLayout>
+
+
+
 
 </RelativeLayout>

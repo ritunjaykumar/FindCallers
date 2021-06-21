@@ -76,26 +76,26 @@
                     android:layout_marginStart="12dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="12dp"
-                    android:visibility="gone"
                     android:background="@drawable/bg_edit_text"
                     android:backgroundTint="@color/colorGreen"
                     android:drawableStart="@drawable/ic_call"
                     android:drawablePadding="4dp"
                     android:drawableTint="@color/colorGreen"
                     android:hint="otp"
+                    android:inputType="numberDecimal"
                     android:lines="1"
                     android:maxLength="6"
-                    android:inputType="numberDecimal"
                     android:textColor="@color/colorGreen"
                     android:textColorHint="@color/greenLight"
+                    android:visibility="gone"
                     tools:ignore="HardcodedText" />
 
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:layout_margin="12dp">
+                    android:layout_margin="12dp"
+                    android:gravity="end">
 
                     <Button
                         android:id="@+id/btnClearNumber"
@@ -106,16 +106,17 @@
                         android:text="Clear"
                         android:textAllCaps="false"
                         tools:ignore="HardcodedText" />
+
                     <Button
                         android:id="@+id/btnClearOtp"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:elevation="2dp"
-                        android:visibility="gone"
                         android:layout_marginStart="12dp"
+                        android:elevation="2dp"
                         android:text="Clear"
                         android:textAllCaps="false"
+                        android:visibility="gone"
                         tools:ignore="HardcodedText" />
 
                     <Button
@@ -125,9 +126,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:elevation="2dp"
-                        android:visibility="gone"
                         android:text="Reset"
                         android:textAllCaps="false"
+                        android:visibility="gone"
                         tools:ignore="HardcodedText" />
                 </LinearLayout>
             </LinearLayout>
@@ -141,6 +142,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
+
         <Button
             android:id="@+id/btnVerifyOtp"
             android:layout_width="match_parent"
@@ -153,11 +155,12 @@
             android:backgroundTint="@color/accent"
             android:includeFontPadding="false"
             android:padding="4dp"
-            android:visibility="gone"
             android:text="Verify Otp"
             android:textAllCaps="false"
             android:textSize="18sp"
+            android:visibility="gone"
             tools:ignore="HardCodedText" />
+
         <Button
             android:id="@+id/btnSendOtp"
             android:layout_width="match_parent"

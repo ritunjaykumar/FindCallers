@@ -16,6 +16,7 @@ import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.models.SimCardInfoModel;
 import com.softgyan.findcallers.preferences.AppPreference;
+import com.softgyan.findcallers.widgets.activity.AccountActivity;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class App extends Application {
 
     public static final String CHANNEL_ID_1 = "channel-1";
     public static final String CHANNEL_ID_2 = "channel-2";
+    public static final String MAIN_SERVICE_ID = "mainServiceId";
 
     @Override
     public void onCreate() {
@@ -43,9 +45,13 @@ public class App extends Application {
             NotificationChannel notificationChannel2 = new NotificationChannel(
                     CHANNEL_ID_2, "SimDetection", NotificationManager.IMPORTANCE_LOW
             );
+            NotificationChannel mainService = new NotificationChannel(
+                    MAIN_SERVICE_ID, "mainService", NotificationManager.IMPORTANCE_LOW
+            );
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(notificationChannel1);
             notificationManager.createNotificationChannel(notificationChannel2);
+            notificationManager.createNotificationChannel(mainService);
         }
     }
 
