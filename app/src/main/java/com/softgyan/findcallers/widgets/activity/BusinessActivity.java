@@ -31,21 +31,20 @@ import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.callback.OnUploadCallback;
 import com.softgyan.findcallers.firebase.FirebaseDB;
 import com.softgyan.findcallers.firebase.FirebaseVar;
-import com.softgyan.findcallers.models.BusinessRecord;
-import com.softgyan.findcallers.models.DoctorModel;
-import com.softgyan.findcallers.models.ElectricianModel;
 import com.softgyan.findcallers.utils.Utils;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class BusinessActivity extends AppCompatActivity {
     private static final String TAG = "BusinessActivity";
-    private Spinner spinner;
-    private EditText etName, etContact, etArea, etPin, etDistrict, etState;
+    private EditText etName, etContact, etArea, etPin, etDistrict, etState, etShopName;
     private RadioGroup rgGender, rgDoctorType;
+    private LinearLayout llMain;
     private boolean isDoctorSelected = false;
+    private String dbName;
 
     public static Boolean isLocationEnabled(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -82,10 +81,10 @@ public class BusinessActivity extends AppCompatActivity {
         etState = findViewById(R.id.etState);
         rgDoctorType = findViewById(R.id.rgDoctorType);
         rgGender = findViewById(R.id.rgGender);
+        llMain = findViewById(R.id.llMain);
+        etShopName = findViewById(R.id.tvshopName);
         Button btnSave = findViewById(R.id.btnSaveData);
-        btnSave.setOnClickListener(v -> {
-            saveRecord();
-        });
+        btnSave.setOnClickListener(v -> saveRecord());
     }
 
     private void saveRecord() {
@@ -97,46 +96,30 @@ public class BusinessActivity extends AppCompatActivity {
             toastMessage("gps is not enable");
             return;
         }
-
-        final BusinessRecord data = getData();
-        Log.d(TAG, "saveRecord: data : " + data);
-        if (data == null) {
+        if (dbName == null || dbName.isEmpty()) {
+            toastMessage("invalid DB name");
             return;
         }
-        if (data.getType() == BusinessRecord.DOCTOR_TYPE) {
-            FirebaseDB.Business.uploadDoctorRecord(data.getDoctorList().get(0), new OnUploadCallback() {
-                @Override
-                public void onUploadSuccess(String message) {
-                    toastMessage("saved data");
-                }
+        final Map<String, Object> businessRecord = getData();
 
-                @Override
-                public void onUploadFailed(String failedMessage) {
-                    toastMessage(failedMessage);
-                }
-            });
-        } else if (data.getType() == BusinessRecord.ELECTRICIAN_TYPE) {
-            try {
-                FirebaseDB.Business.uploadElectricianRecord(data.getElectricianList().get(0), new OnUploadCallback() {
-                    @Override
-                    public void onUploadSuccess(String message) {
-                        toastMessage("saved data");
-                    }
-
-                    @Override
-                    public void onUploadFailed(String failedMessage) {
-                        toastMessage(failedMessage);
-                    }
-                });
-            }catch (Exception ex){
-                Log.d(TAG, "saveRecord: error "+ ex.getMessage());
+        FirebaseDB.Business.saveBusinessRecord(this, dbName, businessRecord, new OnUploadCallback() {
+            @Override
+            public void onUploadSuccess(String message) {
+                toastMessage(message);
+                finish();
             }
-        }
+
+            @Override
+            public void onUploadFailed(String failedMessage) {
+                toastMessage(failedMessage);
+            }
+        });
+
     }
 
     private void initSpinner() {
         LinearLayout llDoctorType = findViewById(R.id.llDoctorType);
-        spinner = findViewById(R.id.spinner);
+        Spinner spinner = findViewById(R.id.spinner);
         String[] filters = getResources().getStringArray(R.array.businessName);
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, filters);
         spinner.setAdapter(arrayAdapter);
@@ -144,34 +127,42 @@ public class BusinessActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
-                if (parent.getSelectedItem().toString().equals(FirebaseVar.Business.POLICE_STATION)) {
+                if (parent.getSelectedItem().toString().equals(FirebaseVar.Business.DB_POLICE_STATION)) {
+                    Utils.hideViews(llDoctorType, llMain);
+                    dbName = FirebaseVar.Business.DB_POLICE_STATION;
                     toastMessage("you can't add this feature");
-                    return;
-                }
-
-                if (parent.getSelectedItem().toString().equals(FirebaseVar.Business.DOCTOR)) {
-                    Utils.showViews(llDoctorType);
+                } else if (parent.getSelectedItem().toString().equals(FirebaseVar.Business.DB_DOCTOR)) {
+                    Utils.showViews(llDoctorType, llMain);
                     isDoctorSelected = true;
-                } else {
+                    dbName = FirebaseVar.Business.DB_DOCTOR;
+                } else if (parent.getSelectedItem().toString().equals(FirebaseVar.Business.DB_ELECTRICIAN)) {
                     Utils.hideViews(llDoctorType);
+                    Utils.showViews(llMain);
                     isDoctorSelected = false;
+                    dbName = FirebaseVar.Business.DB_ELECTRICIAN;
+                } else {
+                    Utils.hideViews(llDoctorType, llMain);
+                    toastMessage("please select valid option");
                 }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                //blank
             }
         });
     }
 
-    private BusinessRecord getData() {
+    private Map<String, Object> getData() {
+        Map<String, Object> businessRecord = new HashMap<>();
+
         String strName = etName.getText().toString();
         String strContactNumber = etContact.getText().toString();
         String strVillage = etArea.getText().toString();
         String strPin = etPin.getText().toString();
         String strDistrict = etDistrict.getText().toString();
         String strState = etState.getText().toString();
+        String strShopName = etShopName.getText().toString();
         final int rbGenderId = rgGender.getCheckedRadioButtonId();
         RadioButton rbTemp;
         if (rbGenderId == R.id.rbFemale) {
@@ -192,8 +183,9 @@ public class BusinessActivity extends AppCompatActivity {
             } else {
                 rbTemp = findViewById(R.id.rbPhysicians);
             }
+            String strDoctorType = rbTemp.getText().toString();
+            businessRecord.put(FirebaseVar.Business.DOCTOR_TYPE, strDoctorType);
         }
-        String strDoctorType = rbTemp.getText().toString();
 
         if (TextUtils.isEmpty(strName)) {
             toastMessage("name field is empty");
@@ -219,23 +211,20 @@ public class BusinessActivity extends AppCompatActivity {
             toastMessage("State field is empty");
             return null;
         }
-
-        BusinessRecord businessRecord;
-        GeoPoint point = getCurrentLocation();
-        if (isDoctorSelected) {
-            List<DoctorModel> doctorModelList = new ArrayList<>();
-            DoctorModel doctorModel = new DoctorModel(strVillage, strPin, strState, strDistrict,
-                    point, null, strName, strGender, strContactNumber, strDoctorType, -1);
-            doctorModelList.add(doctorModel);
-            businessRecord = new BusinessRecord(BusinessRecord.DOCTOR_TYPE, doctorModelList);
-
-        } else {
-            List<ElectricianModel> electricianModels = new ArrayList<>();
-            ElectricianModel electricianModel = new ElectricianModel(strVillage, strPin, strState,
-                    strDistrict, point, null, strName, strGender, strContactNumber, -1);
-            electricianModels.add(electricianModel);
-            businessRecord = new BusinessRecord(electricianModels, BusinessRecord.ELECTRICIAN_TYPE);
+        if (TextUtils.isEmpty(strShopName)) {
+            toastMessage("shop name can't be null");
+            return null;
         }
+        GeoPoint point = getCurrentLocation();
+        businessRecord.put(FirebaseVar.Business.NAME, strName);
+        businessRecord.put(FirebaseVar.Business.CONTACT, strContactNumber);
+        businessRecord.put(FirebaseVar.Business.AREA, strVillage);
+        businessRecord.put(FirebaseVar.Business.PIN_CODE, strPin);
+        businessRecord.put(FirebaseVar.Business.STATE, strState);
+        businessRecord.put(FirebaseVar.Business.DISTRICT, strDistrict);
+        businessRecord.put(FirebaseVar.Business.GEO_POINT, point);
+        businessRecord.put(FirebaseVar.Business.GENDER, strGender);
+        businessRecord.put(FirebaseVar.Business.SHOP_NAME, strShopName);
 
         return businessRecord;
     }

@@ -47,10 +47,15 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ContactModel contactModel = contactList.get(position);
-        holder.tvName.setText(contactModel.getName());
-        if(contactModel.getImage() != null){
+        if (contactModel.getName() == null) {
+            String name = "unknown_" + contactModel.getContactNumbers().get(0).getMobileNumber();
+            holder.tvName.setText(name);
+        } else {
+            holder.tvName.setText(contactModel.getName());
+        }
+        if (contactModel.getImage() != null) {
             Glide.with(mContext).load(contactModel.getImage()).into(holder.sivProfile);
-        }else {
+        } else {
             holder.tvProfile.setText(String.valueOf(contactModel.getName().charAt(0)));
         }
 

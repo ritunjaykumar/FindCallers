@@ -47,18 +47,13 @@ public class ContactsQuery {
         if (numberListSize == 0) {
             return CommVar.INVALID_INDEX;
         }
-        final String userName;
 
-        if (contactModel.getName() == null) {
-            userName = "Contact_" + contactModel.getContactNumbers().get(0).getMobileNumber();
-            contactModel.setName(userName);
-        } else {
-            userName = contactModel.getName();
-        }
 
         //contactValues
         final ContentValues contentValues = new ContentValues();
-        contentValues.put(ContactsDetails.COLUMN_USER_NAME, userName);
+        if(contactModel.getName() != null) {
+            contentValues.put(ContactsDetails.COLUMN_USER_NAME, contactModel.getName());
+        }
         if (contactModel.getAddress() != null) {
             contentValues.put(ContactsDetails.COLUMN_USER_ADDRESS, contactModel.getAddress());
         }
@@ -206,6 +201,8 @@ public class ContactsQuery {
         String[] selectionArgs = {String.valueOf(userRefId)};
         return context.getContentResolver().delete(ContactsDetails.CONTENT_MOBILE_URI, selection, selectionArgs);
     }
+
+
 
 
 }

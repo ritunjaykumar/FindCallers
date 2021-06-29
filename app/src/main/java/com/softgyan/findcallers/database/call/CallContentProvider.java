@@ -182,10 +182,10 @@ public class CallContentProvider extends ContentProvider {
                 SQLiteDatabase database = callHelper.getWritableDatabase();
                 final long id = ContentUris.parseId(uri);
 
-                selection = String.format("WHERE %s = ?", CallDetails.CACHE_NAME);
+                selection = String.format(" %s = ?", CallDetails.CACHE_NAME_ID);
                 selectionArgs = new String[]{String.valueOf(id)};
 
-                return database.update(CallDetails.CALL_HISTORY_TABLE, values, selection, selectionArgs);
+                return database.update(CallDetails.CACHE_NAME_TABLE, values, selection, selectionArgs);
             }
             default: {
                 throw new UnsupportedOperationException("invalid uri : " + uri);

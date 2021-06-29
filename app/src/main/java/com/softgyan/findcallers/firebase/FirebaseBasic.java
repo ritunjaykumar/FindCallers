@@ -134,23 +134,28 @@ public final class FirebaseBasic {
     public static synchronized void deleteImage(String imageUrl, OnUploadCallback deleteCallback) {
         final FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference imageRef = storage.getReferenceFromUrl(imageUrl);
-        imageRef.delete()
-                .addOnSuccessListener(unused -> deleteCallback.onUploadSuccess(null))
-                .addOnFailureListener(e -> deleteCallback.onUploadFailed(e.getMessage()));
+        final Task<Void> delete = imageRef.delete();
+        if (deleteCallback != null) {
+            delete.addOnSuccessListener(unused -> deleteCallback.onUploadSuccess(null));
+            delete.addOnFailureListener(e -> deleteCallback.onUploadFailed(e.getMessage()));
+        }
     }
 
     public static synchronized void uploadBusinessRecord(String collectionName, String documentName,
                                                          HashMap<String, Object> businessData, OnUploadCallback callback) {
 
         FirebaseFirestore mFirestore = FirebaseFirestore.getInstance();
-        mFirestore.collection(FirebaseVar.Business.DB_NAME)
+        final Task<Void> set = mFirestore.collection(FirebaseVar.Business.DB_NAME)
                 .document(collectionName)
                 .collection(collectionName)
                 .document(documentName)
-                .set(businessData)
-                .addOnSuccessListener(unused -> callback.onUploadFailed(null))
-                .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
+                .set(businessData);
+        if (callback != null) {
+            set.addOnSuccessListener(unused -> callback.onUploadFailed(null))
+                    .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
+        }
     }
+
 
 
 }

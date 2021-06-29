@@ -19,16 +19,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.softgyan.findcallers.R;
-import com.softgyan.findcallers.callback.OnResultCallback;
-import com.softgyan.findcallers.callback.OnSuccessfulCallback;
-import com.softgyan.findcallers.callback.OnUploadCallback;
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.query.ContactsQuery;
-import com.softgyan.findcallers.firebase.FirebaseDB;
-import com.softgyan.findcallers.firebase.FirebaseVar;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.CallerInfoModel;
 import com.softgyan.findcallers.models.ContactModel;
@@ -36,9 +30,7 @@ import com.softgyan.findcallers.models.ContactNumberModel;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -191,7 +183,6 @@ public final class Utils {
     }
 
 
-
     public static boolean requestOverlayPermission(Context context) {
         return !Settings.canDrawOverlays(context);
     }
@@ -272,6 +263,7 @@ public final class Utils {
 
 
     public static synchronized void setCallLogToList(CallModel callModel) {
+        Log.d(TAG, "setCallLogToList: callModel : " + callModel);
         final List<CallModel> callList = CommVar.callList;
         Log.d(TAG, "setCallLogToList: size : " + callList.size());
         if (callList.size() == 0) {
@@ -328,6 +320,53 @@ public final class Utils {
 
     }
 
+    public static synchronized void setContactToListSorted(final ContactModel contactModel) {
+        if (CommVar.contactsList.isEmpty()) {
+            CommVar.contactsList.add(contactModel);
+            return;
+        }
+
+        int findIndex = 0;
+        for (int i = 0; i < CommVar.contactsList.size(); i++) {
+            int compareValue = compareString(contactModel.getName().toLowerCase(),
+                    CommVar.contactsList.get(i).getName().toLowerCase());
+            if (compareValue == 0 || compareValue == -1) {
+                CommVar.contactsList.add(findIndex, contactModel);
+                break;
+            } else if (compareValue == 1 && i == (CommVar.contactsList.size() - 1)) {
+                findIndex++;
+                CommVar.contactsList.add(findIndex, contactModel);
+                break;
+            } else {
+                findIndex++;
+            }
+        }
+    }
+
+    public static int compareString(String first, String second) {
+        int length1 = first.length();
+        int length2 = second.length();
+        char[] firstChars = first.toCharArray();
+        char[] secondChars = second.toCharArray();
+        int comparedValue = 0;
+
+        int loopSize = Math.min(length1, length2);
+
+        for (int i = 0; i < loopSize; i++) {
+            if (firstChars[i] == secondChars[i]) {
+                continue;
+            } else if (firstChars[i] < secondChars[i]) {
+                comparedValue = -1;
+                break;
+            } else {
+                comparedValue = 1;
+                break;
+            }
+        }
+
+        return comparedValue;
+    }
+
     public static double getDistanceFromLatLonInKm(double lat1, double lon1, double lat2, double lon2) {
         int R = 6371; // Radius of the earth in km
         double dLat = deg2rad(lat2 - lat1);  // deg2rad below
@@ -351,7 +390,6 @@ public final class Utils {
     public static String getTime(Date currentDateTime) {
         return new SimpleDateFormat("H:mm", Locale.getDefault()).format(currentDateTime);
     }
-
 
 
 }

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -126,7 +127,7 @@ public final class SimCardInfoModel implements Serializable {
         return simCardInfoList;
     }
 
-    public static List<SubscriptionInfo> getSimCardInfo(Context context) throws InvalidException {
+    private static List<SubscriptionInfo> getSimCardInfo(Context context) throws InvalidException {
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
                 PackageManager.PERMISSION_GRANTED) {
             final SubscriptionManager subscriptionManager =

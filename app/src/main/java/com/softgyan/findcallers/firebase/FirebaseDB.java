@@ -5,25 +5,28 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.callback.OnSuccessfulCallback;
 import com.softgyan.findcallers.callback.OnUploadCallback;
 import com.softgyan.findcallers.models.ContactModel;
-import com.softgyan.findcallers.models.DoctorModel;
-import com.softgyan.findcallers.models.ElectricianModel;
+import com.softgyan.findcallers.models.ContactNumberModel;
 import com.softgyan.findcallers.models.UploadContactModel;
 import com.softgyan.findcallers.models.UserInfoModel;
 import com.softgyan.findcallers.utils.Utils;
+import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public final class FirebaseDB {
@@ -84,6 +87,10 @@ public final class FirebaseDB {
                         .document(docName)
                         .get()
                         .addOnSuccessListener(ds -> {
+                            if (!ds.exists()) {
+                                resultCallback.onFailed("data not found");
+                                return;
+                            }
                             Boolean verifyEmail = ds.getBoolean(FirebaseVar.User.EMAIL_VERIFY);
                             boolean tempEmailVerify = false;
                             if (verifyEmail != null) {
@@ -146,7 +153,14 @@ public final class FirebaseDB {
     }
 
     public static final class MobileNumberInfo {
-        private static final String TAG = "MobileNumberInfo";
+        private static final String TAG = "FirebaseDB";
+
+        private static void updateMobileData(String mobile, String key, Object data) {
+            HashMap<String, Object> mapData = new HashMap<>();
+            mapData.put(key, data);
+
+            FirebaseBasic.updateData(FirebaseVar.MobileNumber.MOBILE_DB_NAME, mobile, mapData, null);
+        }
 
         private static void checkDocumentExits(String dbName, String documentId, OnResultCallback<DocumentSnapshot> callback) {
             mFirestore.collection(dbName)
@@ -165,7 +179,6 @@ public final class FirebaseDB {
                     }).addOnFailureListener(e -> callback.onFailed(null));
 
         }
-
 
         public synchronized static void uploadContacts(UploadContactModel contactModel) {
 
@@ -221,26 +234,32 @@ public final class FirebaseDB {
         }
 
         public synchronized static void getMobileNumber(@NonNull String mobileNumber, OnResultCallback<ContactModel> callback) {
+            if (Utils.trimNumber(mobileNumber).length() < 10) {
+                callback.onFailed("invalid mobile number");
+                return;
+            }
             mFirestore.collection(FirebaseVar.MobileNumber.MOBILE_DB_NAME)
                     .document(mobileNumber)
                     .get()
                     .addOnSuccessListener(ds -> {
-
+                        if (!ds.exists()) {
+                            callback.onFailed("not found");
+                            return;
+                        }
 
                         String name = ds.getString(FirebaseVar.MobileNumber.USER_NAME);
                         String address = ds.getString(FirebaseVar.MobileNumber.ADDRESS);
                         String profileUrl = ds.getString(FirebaseVar.MobileNumber.PROFILE_URL);
                         String userEmail = ds.getString(FirebaseVar.MobileNumber.USER_EMAIL);
-                        Log.d(TAG, "getMobileNumber: doc id : " + ds.getId());
-
-
                         ContactModel contactModel = new ContactModel(name);
                         contactModel.setImage(profileUrl);
                         contactModel.setAddress(address);
                         contactModel.setEmailId(userEmail);
+                        contactModel.setContactNumbers(new ContactNumberModel(ds.getId()));
                         callback.onSuccess(contactModel);
 
-                    }).addOnFailureListener(e -> callback.onFailed(e.getMessage()));
+                    })
+                    .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
         }
     }
 
@@ -311,6 +330,12 @@ public final class FirebaseDB {
             });
         }
 
+        /**
+         * @param number   for document name
+         * @param callback callback function
+         *                 return type : name, type, vote
+         */
+
         public static void getSpamNumber(String number, OnResultCallback<HashMap<String, Object>> callback) {
             mFirestore.collection(FirebaseVar.SpamDB.SPAM_DB_NAME)
                     .document(number)
@@ -324,8 +349,11 @@ public final class FirebaseDB {
                             if (totalName > 1) {
                                 tempMapSpam.put(FirebaseVar.SpamDB.NAME, ds.getString(FirebaseVar.SpamDB.NAME + 1));
                                 tempMapSpam.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY, ds.getString(FirebaseVar.SpamDB.SPAM_TYPE_KEY + 1));
+                                tempMapSpam.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, ds.getLong(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE));
+                                callback.onSuccess(tempMapSpam);
+                            } else {
+                                callback.onFailed("no data found..");
                             }
-                            callback.onSuccess(tempMapSpam);
                         } catch (Exception e) {
                             callback.onFailed(e.getMessage());
                         }
@@ -336,150 +364,91 @@ public final class FirebaseDB {
     }
 
     public static final class Business {
-        public static synchronized void getDoctorRecord(int range, double lat,
-                                                        double lon, OnResultCallback<List<DoctorModel>> callback) {
-            final List<DoctorModel> doctorList = new ArrayList<>();
-            FirebaseFirestore mFirestore = FirebaseFirestore.getInstance();
-            mFirestore.collection(FirebaseVar.Business.DB_NAME)
-                    .document(FirebaseVar.Doctor.DB_NAME)
-                    .collection(FirebaseVar.Doctor.DB_NAME)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        final List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
-                        Log.d(TAG, "getDoctorRecord: documents size : " + documents.size());
-                        boolean flag = true;
-                        for (DocumentSnapshot ds : documents) {
-                            GeoPoint geoPoint = ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT);
-                            if (geoPoint == null) {
-                                continue;
-                            }
-                            flag = false;
-                            double sRange = Utils.getDistanceFromLatLonInKm(lat, lon,
-                                    geoPoint.getLatitude(), geoPoint.getLongitude());
-                            Log.d(TAG, "getDoctorRecord: sRange : " + sRange);
-                            if (sRange <= range) {
-                                final DoctorModel doctorDetails = getDoctorDetails(ds, sRange);
-                                doctorList.add(doctorDetails);
-                            }
-                        }
-                        if(flag){
-                            callback.onFailed("Record not found");
-                        }else {
-                            callback.onSuccess(doctorList);
-                        }
-                    })
-                    .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
-        }
-
-        private static DoctorModel getDoctorDetails(DocumentSnapshot ds, double distance) {
-            return new DoctorModel(
-                    ds.getString(FirebaseVar.Doctor.AREA),
-                    ds.getString(FirebaseVar.Doctor.PIN_CODE),
-                    ds.getString(FirebaseVar.Doctor.STATE),
-                    ds.getString(FirebaseVar.Doctor.DISTRICT),
-                    ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT),
-                    ds.getString(FirebaseVar.Doctor.MAP_LOCATION),
-                    ds.getString(FirebaseVar.Doctor.NAME),
-                    ds.getString(FirebaseVar.Doctor.GENDER),
-                    ds.getString(FirebaseVar.Doctor.CONTACT),
-                    ds.getString(FirebaseVar.Doctor.DOCTOR_TYPE),
-                    distance
-            );
-        }
-
-        public static synchronized void getElectricianRecord(int range, double lat,
-                                                             double lon, OnResultCallback<List<ElectricianModel>> callback) {
-            final List<ElectricianModel> electricianList = new ArrayList<>();
-            FirebaseFirestore mFirestore = FirebaseFirestore.getInstance();
-            mFirestore.collection(FirebaseVar.Business.DB_NAME)
-                    .document(FirebaseVar.Electrician.DB_NAME)
-                    .collection(FirebaseVar.Electrician.DB_NAME)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        final List<DocumentSnapshot> documents = queryDocumentSnapshots.getDocuments();
-                        boolean flag = true;
-                        for (DocumentSnapshot ds : documents) {
-                            GeoPoint geoPoint = ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT);
-                            if (geoPoint == null) {
-                                continue;
-                            }
-                            flag = false;
-                            double sRange = Utils.getDistanceFromLatLonInKm(lat, lon,
-                                    geoPoint.getLatitude(), geoPoint.getLongitude());
-                            if (sRange <= range) {
-                                final ElectricianModel electricianDetails = getElectricianDetails(ds, sRange);
-                                electricianList.add(electricianDetails);
-                            }
-
-                        }
-                        if (flag) {
-                            callback.onFailed("no record found");
-                        }else {
-                            callback.onSuccess(electricianList);
-                        }
-                    })
-                    .addOnFailureListener(e -> callback.onFailed(e.getMessage()));
-        }
-
-        private static ElectricianModel getElectricianDetails(DocumentSnapshot ds, double distance) {
-
-            return new ElectricianModel(
-                    ds.getString(FirebaseVar.Doctor.AREA),
-                    ds.getString(FirebaseVar.Doctor.PIN_CODE),
-                    ds.getString(FirebaseVar.Doctor.STATE),
-                    ds.getString(FirebaseVar.Doctor.DISTRICT),
-                    ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT),
-                    ds.getString(FirebaseVar.Doctor.MAP_LOCATION),
-                    ds.getString(FirebaseVar.Doctor.NAME),
-                    ds.getString(FirebaseVar.Doctor.GENDER),
-                    ds.getString(FirebaseVar.Doctor.CONTACT),
-                    distance
-            );
-        }
-
-
-        public static synchronized void uploadDoctorRecord(DoctorModel doctorModel,
-                                                           OnUploadCallback callback) {
+        public static synchronized void getBusinessRecord(Context context, String dbName, int range,
+                                                          GeoPoint currentPoint,
+                                                          OnResultCallback<List<Map<String, Object>>> callback) {
+            ProgressDialog progressDialog = new ProgressDialog(context);
+            progressDialog.setProgressTitle("getting " + dbName + " record..");
+            progressDialog.show();
             FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+            firebaseFirestore.collection(FirebaseVar.Business.DB_NAME)
+                    .document(dbName)
+                    .collection(dbName)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        private final List<Map<String, Object>> businessRecords = new ArrayList<>();
+
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                final List<DocumentSnapshot> documents = task.getResult().getDocuments();
+                                Log.d(TAG, "onComplete: size : "+documents.size());
+                                boolean isFound = true;
+                                for (DocumentSnapshot documentSnapshot : documents) {
+                                    GeoPoint geoPoint = documentSnapshot.getGeoPoint(FirebaseVar.Business.GEO_POINT);
+                                    if (geoPoint == null) {
+                                        continue;
+                                    }
+                                    isFound = false;
+                                    double sRange = Utils.getDistanceFromLatLonInKm(currentPoint.getLatitude(), currentPoint.getLongitude(),
+                                            geoPoint.getLatitude(), geoPoint.getLongitude());
+                                    Log.d(TAG, "onComplete: distance : "+sRange);
+                                    if (sRange <= range) {
+                                        Map<String, Object> records = documentSnapshot.getData();
+                                        if (records != null) {
+                                            records.put(FirebaseVar.Business.DB_TYPE_KEY, dbName);
+                                            records.put(FirebaseVar.Business.DISTANCE_KEY, sRange);
+                                            records.remove(FirebaseVar.Business.GEO_POINT);
+                                        }
+                                        businessRecords.add(records);
+                                    }
+
+                                }
+                                if(isFound){
+                                    callback.onFailed("record not found");
+                                }else{
+                                    callback.onSuccess(businessRecords);
+                                }
+                            } else {
+                                callback.onFailed("something wrong, try again");
+                            }
+                            progressDialog.dismiss();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        callback.onFailed(e.getMessage());
+                    });
+        }
+
+        public static synchronized void saveBusinessRecord(Context context, String dbName,
+                                                           Map<String, Object> businessRecord, OnUploadCallback callback) {
+
+            ProgressDialog progressDialog = new ProgressDialog(context);
+            progressDialog.setProgressTitle("saving " + dbName + " record..");
+            progressDialog.show();
             FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-            String userId = firebaseAuth.getUid();
-            if (userId == null) {
-                callback.onUploadFailed("you are not login");
+            FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+            if (firebaseUser == null) {
+                progressDialog.dismiss();
+                callback.onUploadSuccess("your are not logged in");
                 return;
             }
-            firebaseFirestore.collection(FirebaseVar.Business.DB_NAME)
-                    .document(FirebaseVar.Doctor.DB_NAME)
-                    .collection(FirebaseVar.Doctor.DB_NAME)
-                    .document(userId)
-                    .set(doctorModel)
-                    .addOnSuccessListener(unused -> {
-                        FirebaseDB.UserInfo.updateUser(new String[]{FirebaseVar.User.BUSINESS_ACCOUNT},
-                                new Object[]{true}, null);
-                        callback.onUploadSuccess(null);
-                    })
-                    .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
-        }
 
-        public static synchronized void uploadElectricianRecord(ElectricianModel electricianModel,
-                                                                OnUploadCallback callback) {
             FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-            FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-            String userId = firebaseAuth.getUid();
-            if (userId == null) {
-                callback.onUploadFailed("you are not login");
-                return;
-            }
             firebaseFirestore.collection(FirebaseVar.Business.DB_NAME)
-                    .document(FirebaseVar.Electrician.DB_NAME)
-                    .collection(FirebaseVar.Electrician.DB_NAME)
-                    .document(userId)
-                    .set(electricianModel)
+                    .document(dbName)
+                    .collection(dbName)
+                    .document(firebaseUser.getUid())
+                    .set(businessRecord)
                     .addOnSuccessListener(unused -> {
-                        FirebaseDB.UserInfo.updateUser(new String[]{FirebaseVar.User.BUSINESS_ACCOUNT},
-                                new Object[]{true}, null);
-                        callback.onUploadSuccess(null);
+                        progressDialog.dismiss();
+                        callback.onUploadSuccess("Upload Successful");
                     })
-                    .addOnFailureListener(e -> callback.onUploadFailed(e.getMessage()));
+                    .addOnFailureListener(e -> {
+                        progressDialog.dismiss();
+                        callback.onUploadFailed(e.getMessage());
+                    });
         }
 
     }
@@ -539,3 +508,17 @@ public final class FirebaseDB {
 
 
 }
+
+
+/*GeoPoint geoPoint = ds.getGeoPoint(FirebaseVar.Doctor.GEO_POINT);
+                            if (geoPoint == null) {
+                                continue;
+                            }
+                            flag = false;
+                            double sRange = Utils.getDistanceFromLatLonInKm(lat, lon,
+                                    geoPoint.getLatitude(), geoPoint.getLongitude());
+                            Log.d(TAG, "getDoctorRecord: sRange : " + sRange);
+                            if (sRange <= range) {
+                                final DoctorModel doctorDetails = getDoctorDetails(ds, sRange);
+                                doctorList.add(doctorDetails);
+                            }*/

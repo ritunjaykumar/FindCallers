@@ -21,7 +21,10 @@
         <item>Not Selected</item>
         <item>Doctor</item>
         <item>Electrician</item>
+        <item>Police</item>
     </string-array>
+
+
 
     <string-array name="distance">
         <item>5 km</item>

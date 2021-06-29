@@ -68,6 +68,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignEnd="@+id/frameLayout"
                         android:layout_alignParentBottom="true"
+                        android:visibility="gone"
                         android:background="@android:color/transparent"
                         app:srcCompat="@drawable/ic_person_add"
                         app:tint="@color/primary_light" />

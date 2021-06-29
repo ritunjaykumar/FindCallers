@@ -3,8 +3,9 @@ package com.softgyan.findcallers.widgets.dialog;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.os.Build;
-import android.util.Log;
+import android.os.Handler;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -21,9 +22,10 @@ public class ShowCallInfoDialog implements View.OnClickListener {
     private final WindowManager windowManager;
     private WindowManager.LayoutParams params;
     private final LayoutInflater layoutInflater;
-    private static final String TAG = "CallerDialog";
+    private static final String TAG = "ShowCallInfoDialog";
     private String number;
     private View view;
+    private float xDown, yDown;
 
     private final Context context;
 
@@ -47,6 +49,7 @@ public class ShowCallInfoDialog implements View.OnClickListener {
         int wmFlag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
                 WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
 
+
         params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -54,8 +57,34 @@ public class ShowCallInfoDialog implements View.OnClickListener {
                 wmFlag,
                 PixelFormat.TRANSLUCENT
         );
+        params.x = 0;
+        params.y = 0;
+        view.setOnTouchListener(new View.OnTouchListener() {
+            private final WindowManager.LayoutParams updatedParams = params;
+            private int y;
+            float touchedY;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case (MotionEvent.ACTION_DOWN): {
+                        y = updatedParams.y;
+
+                        touchedY = event.getRawY();
+
+                        break;
+                    }
+                    case (MotionEvent.ACTION_MOVE): {
+                        updatedParams.y = (int) (y + (event.getRawY() - touchedY));
+                        windowManager.updateViewLayout(view, updatedParams);
+                    }
+                }
+                return false;
+            }
+        });
 
     }
+
 
     public void showDialog(String message, @NonNull String number) {
         TextView tvMessage = view.findViewById(R.id.tvCallMessage);
@@ -67,6 +96,8 @@ public class ShowCallInfoDialog implements View.OnClickListener {
         view.findViewById(R.id.tvMessage).setOnClickListener(this);
         view.findViewById(R.id.tvClose).setOnClickListener(this);
         windowManager.addView(view, params);
+
+        new Handler().postDelayed(() -> windowManager.removeView(view), 1000 * 60);
 
     }
 
@@ -84,4 +115,5 @@ public class ShowCallInfoDialog implements View.OnClickListener {
     private void closeWindow() {
         windowManager.removeView(view);
     }
+
 }

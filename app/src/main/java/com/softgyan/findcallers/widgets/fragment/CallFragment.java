@@ -1,6 +1,5 @@
 package com.softgyan.findcallers.widgets.fragment;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,9 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.softgyan.findcallers.R;
+import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.database.contacts.system.SystemContacts;
 import com.softgyan.findcallers.database.query.CallQuery;
+import com.softgyan.findcallers.database.query.ContactsQuery;
 import com.softgyan.findcallers.database.query.SpamQuery;
 import com.softgyan.findcallers.database.spam.SpamContract;
 import com.softgyan.findcallers.firebase.FirebaseDB;
@@ -30,12 +31,14 @@ import com.softgyan.findcallers.models.BlockNumberModel;
 import com.softgyan.findcallers.models.CallModel;
 import com.softgyan.findcallers.models.ContactModel;
 import com.softgyan.findcallers.models.ContactNumberModel;
+import com.softgyan.findcallers.utils.CallUtils;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.activity.AllCallHistoryActivity;
 import com.softgyan.findcallers.widgets.activity.ScanNumberActivity;
 import com.softgyan.findcallers.widgets.adapter.CallLogAdapter;
 import com.softgyan.findcallers.widgets.dialog.DialingPadBehavior;
 import com.softgyan.findcallers.widgets.dialog.InputDialog;
+import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +68,7 @@ public class CallFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        callAdapter = new CallLogAdapter(getContext(), callList, false, callLogCallback);
+        callAdapter = new CallLogAdapter(getContext(), callList, callLogCallback);
         return inflater.inflate(R.layout.fragment_call, container, false);
     }
 
@@ -111,6 +114,15 @@ public class CallFragment extends Fragment {
                     deleteCAllHistory(callModel);
                     break;
                 }
+                case (CallLogAdapter.CallLogCallback.SEARCH_NUMBER): {
+                    searchNumber(callModel, position);
+                    break;
+                }
+
+                case (CallLogAdapter.CallLogCallback.SEND_SMS): {
+                    CallUtils.sendMessageIntent(getContext(), callModel.getCallNumberList().get(0).getNumber());
+                    break;
+                }
                 case (CallLogAdapter.CallLogCallback.SAVE_NUMBER): {
                     final String[] name = new String[1];
                     if (callModel.getCacheName() == null) {
@@ -147,6 +159,55 @@ public class CallFragment extends Fragment {
     }
 
 
+    private void searchNumber(CallModel callModel, int position) {
+        Log.d(TAG, "searchNumber: searching number....");
+        ProgressDialog dialog = new ProgressDialog(getContext());
+        dialog.setProgressTitle("searching number " + callModel.getCallNumberList().get(0).getNumber());
+        dialog.dismiss();
+        FirebaseDB.MobileNumberInfo.getMobileNumber(callModel.getCallNumberList().get(0).getNumber(),
+                new OnResultCallback<ContactModel>() {
+                    @Override
+                    public void onSuccess(@NonNull ContactModel contactModel) {
+                        Log.d(TAG, "onSuccess: contact model : " + contactModel);
+                        //updating cached name
+                        if (contactModel.getName() != null && !contactModel.getName().isEmpty()) {
+                            final int updateCachedName = CallQuery.updateCachedName(getContext(),
+                                    callModel.getNameId(), contactModel.getName());
+
+                            if (updateCachedName == 1) {
+
+                                callModel.setCacheName(contactModel.getName());
+
+                                if (callAdapter != null) {
+                                    callAdapter.notifyItemChanged(position, callModel);
+                                    final int i = ContactsQuery.insertContactsDetails(getContext(), contactModel);
+                                    if (i == CommVar.SUCCESS) {
+                                        Utils.setContactToList(contactModel);
+                                    }
+                                }
+
+
+                            }
+                        }
+
+                        final int i = ContactsQuery.insertContactsDetails(getContext(), contactModel);
+                        if (i == 2) {
+                            //success
+                            Utils.setContactToListSorted(contactModel);
+                        }
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void onFailed(String failedMessage) {
+                        Log.d(TAG, "onFailed: failed message : " + failedMessage);
+                        dialog.dismiss();
+                        Toast.makeText(getContext(), failedMessage, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
     private void insertSpamOrBlock(CallModel callModel, boolean isSpam) {
 
         BlockNumberModel blockModel = new BlockNumberModel();
@@ -176,7 +237,7 @@ public class CallFragment extends Fragment {
         HashMap<String, Object> spamMap = new HashMap<>();
         spamMap.put(FirebaseVar.SpamDB.MOBILE_NUMBER, callModel.getCallNumberList().get(0).getNumber());
         spamMap.put(FirebaseVar.SpamDB.SPAM_TYPE_KEY, "fraud");
-        spamMap.put(FirebaseVar.SpamDB.NAME , callModel.getCacheName());
+        spamMap.put(FirebaseVar.SpamDB.NAME, callModel.getCacheName());
         spamMap.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, 1);
         spamMap.put(FirebaseVar.SpamDB.TOTAL_NAME, 1);
 

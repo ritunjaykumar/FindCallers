@@ -38,7 +38,7 @@ public class CallHelper extends SQLiteOpenHelper {
     private void tableQuery(final SQLiteDatabase database) {
         final String callNameTable = "CREATE TABLE " + CallDetails.CACHE_NAME_TABLE + " ( " +
                 CallDetails.CACHE_NAME_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                CallDetails.CACHE_NAME + " INTEGER NOT NULL " +
+                CallDetails.CACHE_NAME + " TEXT " +
                 ")";
 
         final String callTable = "CREATE TABLE " + CallDetails.CALL_HISTORY_TABLE + " ( " +

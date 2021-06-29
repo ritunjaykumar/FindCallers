@@ -2,31 +2,33 @@ package com.softgyan.findcallers.widgets.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.softgyan.findcallers.R;
-import com.softgyan.findcallers.models.BusinessRecord;
-import com.softgyan.findcallers.models.DoctorModel;
-import com.softgyan.findcallers.models.ElectricianModel;
-import com.softgyan.findcallers.utils.Common;
+import com.softgyan.findcallers.firebase.FirebaseVar;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.activity.BusinessDetailsActivity;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class BusinessRecordAdapter extends RecyclerView.Adapter<BusinessRecordAdapter.ViewHolder> {
     private final Context mContext;
-    private final BusinessRecord businessRecord;
+    private final List<Map<String, Object>> businessRecords;
+    private static final String TAG = "BusinessRecordAdapter";
 
-    public BusinessRecordAdapter(Context context, BusinessRecord businessRecord) {
-        this.businessRecord = businessRecord;
+    public BusinessRecordAdapter(Context context, List<Map<String, Object>> businessRecord) {
+        this.businessRecords = businessRecord;
+        Log.d(TAG, "BusinessRecordAdapter: size : " + businessRecord.size());
         this.mContext = context;
     }
 
@@ -39,48 +41,77 @@ public class BusinessRecordAdapter extends RecyclerView.Adapter<BusinessRecordAd
 
     @Override
     public void onBindViewHolder(@NonNull BusinessRecordAdapter.ViewHolder holder, int position) {
-        int id = businessRecord.getType();
-        Common.clearValue();
-        Common.type = id;
-        if (id == BusinessRecord.DOCTOR_TYPE) {
-            final List<DoctorModel> doctorList = businessRecord.getDoctorList();
-            DoctorModel doctorModel = doctorList.get(position);
-            holder.tvName.setText(doctorModel.getName());
-            holder.tvDoctorType.setText(doctorModel.getDoctorType());
-            holder.tvArea.setText(doctorModel.getArea());
-            holder.tvDistrict.setText(doctorModel.getDistrict());
-            holder.tvDistance.setText(doctorModel.getDistance() + " km");
-            Common.doctorModel = doctorModel;
+        final HashMap<String, Object> map = (HashMap<String, Object>) businessRecords.get(position);
+        String type = (String) map.get(FirebaseVar.Business.DB_TYPE_KEY);
+        if (type != null && type.equals(FirebaseVar.Business.DB_POLICE_STATION)) {
+            String inspectorName = (String) map.get(FirebaseVar.Business.PoliceInfo.INSPECTOR_NAME);
+            if (inspectorName != null) {
+                holder.tvName.setText(inspectorName);
+            }
 
-        } else if (id == BusinessRecord.ELECTRICIAN_TYPE) {
-            final List<ElectricianModel> electricianList = businessRecord.getElectricianList();
-            ElectricianModel electricianModel = electricianList.get(position);
-            holder.tvName.setText(electricianModel.getName());
-            holder.tvArea.setText(electricianModel.getArea());
-            holder.tvDistrict.setText(electricianModel.getDistrict());
-            holder.tvDistance.setText(electricianModel.getDistance() + " km");
-            Utils.hideViews(holder.tvDoctorType);
-            Common.electricianModel = electricianModel;
+            String countryName = (String) map.get(FirebaseVar.Business.PoliceInfo.COUNTRY);
+            if (countryName != null) {
+                holder.tvArea.setText(countryName);
+            }
+            String contactNumber = (String) map.get(FirebaseVar.Business.PoliceInfo.CONTACT);
+            if (contactNumber != null) {
+                holder.tvDoctorType.setText(contactNumber);
+            }
+
+            String policeStation = (String) map.get(FirebaseVar.Business.PoliceInfo.POLICE_STATION_NAME);
+            if (policeStation != null) {
+                holder.tvDistrict.setText(policeStation);
+            }
+
+            Double distance = (Double) map.get(FirebaseVar.Business.DISTANCE_KEY);
+            if (distance != null) {
+                holder.tvDistance.setText(String.format(Locale.getDefault(),"%.2f km",distance));
+            }
+        } 
+        else {
+            if (type != null && type.equals(FirebaseVar.Business.DB_DOCTOR)) {
+                String doctorType = (String) map.get(FirebaseVar.Business.DOCTOR_TYPE);
+                if (doctorType != null) {
+                    holder.tvDoctorType.setText(doctorType);
+                } else {
+                    Utils.hideViews(holder.tvDoctorType);
+                }
+            } else {
+                Utils.hideViews(holder.tvDoctorType);
+            }
+
+            String name = (String) map.get(FirebaseVar.Business.NAME);
+            if (name != null) {
+                holder.tvName.setText(name);
+            }
+
+            String area = (String) map.get(FirebaseVar.Business.AREA);
+            if (area != null) {
+                holder.tvArea.setText(area);
+            }
+
+            String district = (String) map.get(FirebaseVar.Business.DISTRICT);
+            if (district != null) {
+                holder.tvDistrict.setText(district);
+            }
+            Double distance = (Double) map.get(FirebaseVar.Business.DISTANCE_KEY);
+            if (distance != null) {
+                holder.tvDistance.setText(String.format(Locale.getDefault(),"%.2f km",distance));
+            }
         }
 
         holder.itemView.setOnClickListener(v -> {
-            try {
-                Intent intent = new Intent(mContext, BusinessDetailsActivity.class);
-                mContext.startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
-            }
+            Log.d(TAG, "onBindViewHolder: hello");
+            Intent intent = new Intent(mContext, BusinessDetailsActivity.class);
+            intent.putExtra(BusinessDetailsActivity.DATA_KEY, map);
+            mContext.startActivity(intent);
         });
+
     }
 
     @Override
     public int getItemCount() {
-        if (businessRecord.getType() == BusinessRecord.DOCTOR_TYPE) {
-            return businessRecord.getDoctorList().size();
-        } else if (businessRecord.getType() == BusinessRecord.ELECTRICIAN_TYPE) {
-            return businessRecord.getElectricianList().size();
-        }
-        return 0;
+        return businessRecords.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

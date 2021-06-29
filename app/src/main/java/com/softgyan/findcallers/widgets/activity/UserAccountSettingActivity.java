@@ -34,6 +34,7 @@ import com.softgyan.findcallers.database.CommVar;
 import com.softgyan.findcallers.firebase.FirebaseBasic;
 import com.softgyan.findcallers.firebase.FirebaseDB;
 import com.softgyan.findcallers.firebase.FirebaseVar;
+import com.softgyan.findcallers.models.UploadContactModel;
 import com.softgyan.findcallers.models.UserInfoModel;
 import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.utils.Utils;
@@ -109,8 +110,6 @@ public class UserAccountSettingActivity extends AppCompatActivity implements Vie
         final int id = v.getId();
         SingleValueDialog valueDialog;
         if (id == R.id.btnAccountDelete) {
-            /*deleteAccount();*/
-
             Intent intent = new Intent(this, AccountActivity.class);
             intent.putExtra(AccountActivity.DELETE_KEY, true);
             ActivityCompat.startActivityForResult(this, intent, 500, null);
@@ -166,7 +165,8 @@ public class UserAccountSettingActivity extends AppCompatActivity implements Vie
                 break;
             }
             case (ImageSelectorDialog.ImageSelectorCallback.REMOVE_CODE): {
-
+                removeImageFromFirebase(true);
+                break;
             }
         }
         sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
@@ -374,6 +374,7 @@ public class UserAccountSettingActivity extends AppCompatActivity implements Vie
     private void uploadImage(final Uri imageUri) {
         pDialog.show();
         pDialog.setProgressTitle("");
+        removeImageFromFirebase(false);
         FirebaseBasic.uploadImage(imageUri, this, new OnUploadCallback() {
             @Override
             public void onUploadSuccess(String profileUrl) {
@@ -397,16 +398,45 @@ public class UserAccountSettingActivity extends AppCompatActivity implements Vie
         });
     }
 
+    private void removeImageFromFirebase(boolean isShowMessage) {
+
+        if (mUserInfo != null && mUserInfo.getUserProfile() != null && !mUserInfo.getUserProfile().isEmpty()) {
+            ProgressDialog progressDialog = new ProgressDialog(this);
+            progressDialog.setProgressTitle("deleting image");
+            progressDialog.show();
+            FirebaseBasic.deleteImage(mUserInfo.getUserProfile(), new OnUploadCallback() {
+                @Override
+                public void onUploadSuccess(String message) {
+                    if (isShowMessage) {
+                        sivProfile.setImageResource(R.mipmap.test_image);
+                        Toast.makeText(UserAccountSettingActivity.this, "profile image deleted", Toast.LENGTH_SHORT).show();
+                        FirebaseDB.UserInfo.updateUser(new String[]{FirebaseVar.User.USER_PROFILE},
+                                new String[]{null}, null);
+                        mUserInfo.setUserProfile(null);
+                    }
+                    progressDialog.dismiss();
+                }
+
+                @Override
+                public void onUploadFailed(String failedMessage) {
+                    progressDialog.dismiss();
+                    if (isShowMessage) {
+                        Toast.makeText(UserAccountSettingActivity.this, failedMessage, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+    }
+
     private void uploadUserInfo() {
         pDialog.setProgressTitle("saving User Info");
         pDialog.show();
+        uploadContactModel();
         FirebaseDB.UserInfo.uploadUserInfo(mUserInfo, new OnUploadCallback() {
             @Override
             public void onUploadSuccess(String message) {
                 pDialog.dismiss();
-
                 AppPreference.setAccountActivitySet(UserAccountSettingActivity.this, true);
-
                 Intent intent = new Intent(UserAccountSettingActivity.this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
@@ -479,4 +509,17 @@ public class UserAccountSettingActivity extends AppCompatActivity implements Vie
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void uploadContactModel() {
+        UploadContactModel model = new UploadContactModel();
+        model.setAddress(mUserInfo.getUserAddress());
+        model.setUserEmail(mUserInfo.getUserEmail());
+        model.setMobileNumber(mUserInfo.getAccountMobileNumber());
+        model.setUserName(mUserInfo.getUserName());
+        model.setUserSetName(true);
+        model.setTotalName(0);
+        model.setProfileUrl(model.getProfileUrl());
+        FirebaseDB.MobileNumberInfo.uploadContacts(model);
+    }
+
 }

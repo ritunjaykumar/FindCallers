@@ -76,10 +76,14 @@ public final class CallHardware {
     public static void doCall(Context context, @NonNull String number) {
         if (isPhoneSupportTelephony(context)) {
             if (SimDetails.getSimState(context) == SIM_READY) {
-                Intent callIntent = new Intent(Intent.ACTION_CALL);
-                callIntent.setData(Uri.parse("tel:" + number));
-                callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(callIntent);
+                try {
+                    Intent callIntent = new Intent(Intent.ACTION_CALL);
+                    callIntent.setData(Uri.parse("tel:" + number));
+                    callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(callIntent);
+                } catch (Exception e) {
+                    Log.d(TAG, "doCall: error : " + e.getMessage());
+                }
             } else {
                 Toast.makeText(context, "Sim card is not ready to call", Toast.LENGTH_SHORT).show();
             }

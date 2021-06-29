@@ -45,7 +45,6 @@ public final class CallQuery {
             String sim_id = query.getString(query.getColumnIndex(CallDetails.CALL_COLUMN_SUBSCRIPTION_ID));
             int call_type = query.getInt(query.getColumnIndex(CallDetails.CALL_COLUMN_TYPE));
 
-
             CallNumberModel callNumberModel = new CallNumberModel(
                     id, refId, number, callDate, call_type, sim_id, -1, (int) dur
             );
@@ -116,7 +115,7 @@ public final class CallQuery {
         if (callNumberModel == null) return null;
         ContentValues cValues = new ContentValues();
         cValues.put(CallDetails.CALL_COLUMN_NAME_REF_ID, callNumberModel.getNameRefId());
-        cValues.put(CallDetails.CALL_COLUMN_NUMBER, callNumberModel.getNumber());
+        cValues.put(CallDetails.CALL_COLUMN_NUMBER, Utils.trimNumber(callNumberModel.getNumber()));
         cValues.put(CallDetails.CALL_COLUMN_DATE, callNumberModel.getDate().getTime());
         cValues.put(CallDetails.CALL_COLUMN_TYPE, callNumberModel.getType());
         cValues.put(CallDetails.CALL_COLUMN_DURATION, callNumberModel.getDuration());
@@ -225,5 +224,12 @@ public final class CallQuery {
 
         query.close();
         return callModel;
+    }
+
+    public synchronized static int updateCachedName(Context context, int id, String name) {
+        ContentValues values = new ContentValues();
+        values.put(CallDetails.CACHE_NAME, name);
+        return context.getContentResolver().update(ContentUris.withAppendedId(CallDetails.CONTENT_CACHE_NAME_URI, id),
+                values, null, null);
     }
 }

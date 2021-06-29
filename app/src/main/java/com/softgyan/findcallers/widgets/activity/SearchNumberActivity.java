@@ -20,7 +20,6 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.callback.OnResultCallback;
-import com.softgyan.findcallers.callback.OnUploadCallback;
 import com.softgyan.findcallers.database.query.SpamQuery;
 import com.softgyan.findcallers.database.spam.SpamContract;
 import com.softgyan.findcallers.firebase.FirebaseDB;
@@ -39,13 +38,11 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
     public static final String NOT_AVAILABLE = "not available";
     private ShapeableImageView imageView;
     private EditText etSearch;
-    private TextView tvName, tvAddress, tvEmail, tvMobile;
-    private Button btnSaveToContact, btnAddToSpam, btnAddToBlock, btnSearch;
-    private ImageButton ibClear;
-    private CardView cardView;
-    private boolean isSpam = false;
-    private boolean isBlock = false;
-    private boolean isNumberSave = false;
+    private TextView tvName, tvAddress, tvEmail, tvMobile, tvSpamType, tvSpamVote;
+    private Button btnSaveToContact;
+    private Button btnAddToSpam;
+    private Button btnAddToBlock;
+    private CardView cardView, spamCardView;
     private String name;
     private ProgressDialog pDialog;
 
@@ -76,8 +73,9 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         int id = v.getId();
         if (id == R.id.ibClear) {
             etSearch.setText(null);
+            Utils.hideViews(cardView,spamCardView, btnAddToSpam, btnAddToBlock, btnSaveToContact);
         } else if (id == R.id.btnSearch) {
-            Utils.hideViews(cardView);
+            Utils.hideViews(cardView,spamCardView, btnAddToSpam, btnAddToBlock, btnSaveToContact);
             searchOperation();
         } else if (id == R.id.btnAddToSpam) {
             insertSpamNumber();
@@ -87,13 +85,16 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
                 Toast.makeText(this, "invalid mobile number.", Toast.LENGTH_SHORT).show();
                 return;
             }
-            insertSpamOrBlock(mobileNumber, "block");
+            insertSpamOrBlock(mobileNumber, "block", true);
+        } else if (id == R.id.btnSaveToContact) {
+
         }
     }
 
     private void searchOperation() {
-
+        HashMap<String, Object> searchedNumber = new HashMap<>();
         String tempNumber = getMobileNumber();
+        Log.d(TAG, "searchOperation: tempNumber : " + tempNumber);
         if (tempNumber == null) return;
         //checking block list or spam -> start
         pDialog.setTitle("searching number...");
@@ -102,18 +103,18 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         if (blockListArray != null && blockListArray.size() >= 1) {
             final BlockNumberModel blockNumberModel = blockListArray.get(0);
             if (blockNumberModel.getType() == SpamContract.BLOCK_TYPE) {
-                isBlock = true;
+                searchedNumber.put("blockKey", true);
             } else {
-                isSpam = true;
+                searchedNumber.put("spamKey", true);
             }
         }
         //checking block list or spam -> end
-
         final ContactModel contactModel = Utils.advanceSearch(this, tempNumber);
+        Log.d(TAG, "searchOperation: contact model : " + contactModel);
 
         if (contactModel == null) {
             if (!Utils.isInternetConnectionAvailable(this)) {
-                Toast.makeText(this, "Not found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "check internet connectivity..", Toast.LENGTH_SHORT).show();
                 pDialog.dismiss();
                 return;
             }
@@ -121,23 +122,45 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
                 @Override
                 public void onSuccess(@NonNull ContactModel contactModel) {
                     name = contactModel.getName();
-                    setValueToView(contactModel);
+                    searchedNumber.put("contactModel", contactModel);
                     pDialog.dismiss();
+                    setValueToView(searchedNumber);
                 }
 
                 @Override
                 public void onFailed(String failedMessage) {
                     Toast.makeText(SearchNumberActivity.this, failedMessage, Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onFailed: failedMessage : " + failedMessage);
                     pDialog.dismiss();
                 }
 
             });
+
         } else {
-            isNumberSave = true;
+            searchedNumber.put("isNumberSave", true);
             name = contactModel.getName();
-            setValueToView(contactModel);
+            searchedNumber.put("contactModel", contactModel);
+            setValueToView(searchedNumber);
+            //            setValueToView(contactModel);
             pDialog.dismiss();
         }
+
+        FirebaseDB.SpamDB.getSpamNumber(tempNumber, new OnResultCallback<HashMap<String, Object>>() {
+            @Override
+            public void onSuccess(@NonNull HashMap<String, Object> spamMap) {
+                searchedNumber.put("spamMap", spamMap);
+                Log.d(TAG, "onSuccess: spam number : " + spamMap);
+                setValueToView(searchedNumber);
+            }
+
+            @Override
+            public void onFailed(String failedMessage) {
+                //do nothing...
+                searchedNumber.remove("spamMap");
+                setValueToView(searchedNumber);
+                Log.d(TAG, "onFailed: spam failedMessage : " + failedMessage);
+            }
+        });
     }
 
     private void insertSpamNumber() {
@@ -154,35 +177,26 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         spamMap.put(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE, 1);
         spamMap.put(FirebaseVar.SpamDB.TOTAL_NAME, 1);
 
-        FirebaseDB.SpamDB.uploadSpamNumber(spamMap, new OnUploadCallback() {
-            @Override
-            public void onUploadSuccess(String message) {
+        FirebaseDB.SpamDB.uploadSpamNumber(spamMap, null);
 
-            }
-
-            @Override
-            public void onUploadFailed(String failedMessage) {
-
-            }
-        });
-
-        insertSpamOrBlock(mobileNumber, "spam");
+        insertSpamOrBlock(mobileNumber, "spam", false);
     }
 
-    private void insertSpamOrBlock(String mobileNumber, String message) {
-        if (!isSpam && !isBlock) {
-            BlockNumberModel blockModel = new BlockNumberModel();
-            blockModel.setNumber(mobileNumber);
-            blockModel.setName(name);
-            blockModel.setType(SpamContract.SPAM_TYPE);
-            final int i = SpamQuery.insertBlockList(this, blockModel);
-            if (i != 1) {
-                Toast.makeText(this, "inserted into " + message, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "not inserted into " + message, Toast.LENGTH_SHORT).show();
-            }
+    private void insertSpamOrBlock(String mobileNumber, String message, boolean isBlock) {
+
+        BlockNumberModel blockModel = new BlockNumberModel();
+        blockModel.setNumber(mobileNumber);
+        blockModel.setName(name);
+        if (isBlock) {
+            blockModel.setType(SpamContract.BLOCK_TYPE);
         } else {
-            Toast.makeText(this, "already exits.", Toast.LENGTH_SHORT).show();
+            blockModel.setType(SpamContract.SPAM_TYPE);
+        }
+        final int i = SpamQuery.insertBlockList(this, blockModel);
+        if (i != 1) {
+            Toast.makeText(this, "inserted into " + message, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "not inserted into " + message, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -195,11 +209,13 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         btnAddToBlock = findViewById(R.id.btnAddToBlock);
         btnAddToSpam = findViewById(R.id.btnAddToSpam);
         btnSaveToContact = findViewById(R.id.btnSaveToContact);
-        btnSearch = findViewById(R.id.btnSearch);
+        Button btnSearch = findViewById(R.id.btnSearch);
         imageView = findViewById(R.id.sivProfile);
-        ibClear = findViewById(R.id.ibClear);
+        tvSpamType = findViewById(R.id.tvSpamType);
+        tvSpamVote = findViewById(R.id.tvSpamVote);
+        ImageButton ibClear = findViewById(R.id.ibClear);
         cardView = findViewById(R.id.cardView);
-
+        spamCardView = findViewById(R.id.spamCardView);
         btnSearch.setOnClickListener(this);
         btnAddToBlock.setOnClickListener(this);
         btnAddToSpam.setOnClickListener(this);
@@ -230,7 +246,7 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
 
     private String getMobileNumber() {
         String tempNumber = etSearch.getText().toString();
-        if ((tempNumber != null) && (tempNumber.length() > 9 && tempNumber.length() < 14)) {
+        if (tempNumber.length() > 9 && tempNumber.length() < 14) {
             return Utils.trimNumber(tempNumber);
         } else {
             Toast.makeText(this, "invalid mobile number", Toast.LENGTH_SHORT).show();
@@ -238,43 +254,80 @@ public class SearchNumberActivity extends AppCompatActivity implements View.OnCl
         }
     }
 
-    private void setValueToView(final ContactModel contactModel) {
-        Utils.showViews(cardView);
+    private void setValueToView(final HashMap<String, Object> searchedNumber) {
         try {
+            ContactModel contactModel = (ContactModel) searchedNumber.get("contactModel");
+            if (contactModel != null) {
+                Utils.showViews(cardView);
 
-            if (contactModel.getName() != null) {
-                tvName.setText(contactModel.getName());
+                if (contactModel.getName() != null) {
+                    tvName.setText(contactModel.getName());
+                } else {
+                    tvName.setText(NOT_AVAILABLE);
+                }
+                if (contactModel.getEmailId() != null) {
+                    tvEmail.setText(contactModel.getEmailId());
+                } else {
+                    tvEmail.setText(NOT_AVAILABLE);
+                }
+                tvMobile.setText(contactModel.getContactNumbers().get(0).getMobileNumber());
+                if (contactModel.getImage() != null) {
+                    Glide.with(this).load(contactModel.getImage()).into(imageView);
+                }
+                if (contactModel.getAddress() != null) {
+                    tvAddress.setText((contactModel.getAddress()));
+                } else {
+                    tvAddress.setText(NOT_AVAILABLE);
+                }
+
             } else {
-                tvName.setText(NOT_AVAILABLE);
-            }
-            if (contactModel.getEmailId() != null) {
-                tvEmail.setText(contactModel.getEmailId());
-            } else {
-                tvEmail.setText(NOT_AVAILABLE);
-            }
-            tvMobile.setText(contactModel.getContactNumbers().get(0).getMobileNumber());
-            if (contactModel.getImage() != null) {
-                Glide.with(this).load(contactModel.getImage()).into(imageView);
-            }
-            if (contactModel.getAddress() != null) {
-                tvAddress.setText((contactModel.getAddress()));
-            } else {
-                tvAddress.setText(NOT_AVAILABLE);
+                Utils.hideViews(cardView);
             }
 
-            if (isSpam || isBlock) {
-                Utils.hideViews(btnAddToBlock);
+            Boolean isSpam = (Boolean) searchedNumber.get("spamKey");
+            Boolean isBlock = (Boolean) searchedNumber.get("blockKey");
+            if ((isSpam != null && isSpam) || (isBlock != null && isBlock)) {
+                Utils.hideViews(btnAddToSpam, btnAddToBlock);
             } else {
-                Utils.showViews(btnAddToBlock);
+                Utils.showViews(btnAddToSpam, btnAddToBlock);
             }
-            if (isNumberSave) {
+
+            Boolean isNumberSave = (Boolean) searchedNumber.get("isNumberSave");
+            if (isNumberSave != null && isNumberSave) {
                 Utils.hideViews(btnSaveToContact);
             } else {
                 Utils.showViews(btnSaveToContact);
             }
+
+            try {
+                HashMap<String, Object> spamData = (HashMap<String, Object>) searchedNumber.get("spamMap");
+                Log.d(TAG, "setValueToView: spamData : " + spamData);
+                if (spamData != null) {
+                    Utils.showViews(spamCardView);
+                    Long spamVote = (Long) spamData.get(FirebaseVar.SpamDB.TOTAL_SPAM_VOTE);
+                    String spamType = (String) spamData.get(FirebaseVar.SpamDB.SPAM_TYPE_KEY);
+                    if (spamVote != null) {
+                        tvSpamVote.setText(String.valueOf(spamVote));
+                    } else {
+                        Log.d(TAG, "setValueToView: tvSpamProblem " + spamVote);
+                    }
+                    if (spamType != null && spamType.length() > 0) {
+                        tvSpamType.setText(spamType);
+                    } else {
+                        Log.d(TAG, "setValueToView: tvSpamTypeProblem " + spamType);
+                    }
+                } else {
+                    Utils.hideViews(spamCardView);
+                }
+            } catch (Exception e) {
+                Utils.hideViews(spamCardView);
+                Log.d(TAG, "setValueToView: error message : " + e.getMessage());
+            }
+
+
         } catch (Exception e) {
             Log.d(TAG, "setValueToView: error : " + e.getMessage());
-            Utils.hideViews(btnAddToBlock, btnAddToSpam, btnSaveToContact);
+            Utils.hideViews(btnAddToBlock, btnAddToSpam, btnSaveToContact, cardView, spamCardView);
         }
     }
 

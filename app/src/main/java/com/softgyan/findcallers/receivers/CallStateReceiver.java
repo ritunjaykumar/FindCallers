@@ -18,6 +18,7 @@ public abstract class CallStateReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+
         try {
             int simId = intent.getExtras().getInt(SIM_ID_KEY, -1);
             String callNumber;
@@ -52,7 +53,7 @@ public abstract class CallStateReceiver extends BroadcastReceiver {
             } else if (callingState.equals(TelephonyManager.EXTRA_STATE_IDLE)) {
                 //'call' when call is disconnected
                 callState = TelephonyManager.CALL_STATE_IDLE;
-                onCallEnd(context, callNumber,isOutGoing, new Date(), simId);
+                onCallEnd(context, callNumber, isOutGoing, new Date(), simId);
                 Log.d(TAG, "onReceive: callState : CALL_STATE_IDLE");
             }
             lastState = callState;

@@ -38,6 +38,7 @@
             android:layout_margin="4dp"
             android:visibility="gone"
             android:textSize="14sp"
+            android:layout_gravity="center"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_height="wrap_content"
             android:text="Cancel"

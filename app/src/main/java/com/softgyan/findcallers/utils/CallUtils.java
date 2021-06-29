@@ -48,6 +48,9 @@ public final class CallUtils {
     }
 
     public static synchronized void sendMessageIntent(Context context, String number) {
+        if (context == null) {
+            return;
+        }
         Uri uriSms = Uri.parse("smsto:" + number);
         Intent intentSMS = new Intent(Intent.ACTION_SENDTO, uriSms);
         intentSMS.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -86,7 +89,7 @@ public final class CallUtils {
                 if (startDate != null && startTime != null && endDate != null && endTime != null && sMessage != null) {
 
                     final boolean compareDate = compareDate(Utils.getTime(today), Utils.getDate(today), endTime, endDate);
-                    Log.d(TAG, "onSuccess: compare date : "+compareDate);
+                    Log.d(TAG, "onSuccess: compare date : " + compareDate);
                     if (compareDate) {
                         callback.onUploadSuccess(sMessage + " till " + endTime);
                     } else {
@@ -133,7 +136,7 @@ public final class CallUtils {
 
             if (eYear - sYear == 0 && eMonth - sMonth == 0 && eDay - sDay == 0) {
                 Log.d(TAG, "compareDate: same day");
-            }else{
+            } else {
                 return false;
             }
 

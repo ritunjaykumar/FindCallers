@@ -28,16 +28,13 @@ import com.google.firebase.firestore.GeoPoint;
 import com.softgyan.findcallers.R;
 import com.softgyan.findcallers.callback.OnResultCallback;
 import com.softgyan.findcallers.firebase.FirebaseDB;
-import com.softgyan.findcallers.firebase.FirebaseVar;
-import com.softgyan.findcallers.models.BusinessRecord;
-import com.softgyan.findcallers.models.DoctorModel;
-import com.softgyan.findcallers.models.ElectricianModel;
-import com.softgyan.findcallers.utils.Common;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.adapter.BusinessRecordAdapter;
 import com.softgyan.findcallers.widgets.dialog.ProgressDialog;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class SearchImportantNumberActivity extends AppCompatActivity implements View.OnClickListener {
@@ -91,19 +88,19 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
             }
 
             isCancelByUser = false;
-            getCurrentGeoPoint("fdksfsk", -1);
-            LocationLoader locationLoader = new LocationLoader();
+            LocationLoader locationLoader = new LocationLoader(true);
             locationLoader.execute();
 
         } else if (id == R.id.tvBusinessAccount) {
-            Intent intent = new Intent(this, BusinessActivity.class);
-            startActivity(intent);
+
+            LocationLoader locationLoader = new LocationLoader(false);
+            locationLoader.execute();
+
         }
     }
 
-    private void setupRecyclerView(BusinessRecord businessRecord) {
+    private void setupRecyclerView(List<Map<String, Object>> businessRecord) {
         Log.d(TAG, "setupRecyclerView: business Record : " + businessRecord);
-
         BusinessRecordAdapter businessRecordAdapter = new BusinessRecordAdapter(this, businessRecord);
         rvDetails.setAdapter(businessRecordAdapter);
         businessRecordAdapter.notifyDataSetChanged();
@@ -111,98 +108,22 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
     }
 
 
-    public void getCurrentGeoPoint(String filterValue, int distance) {
-        Log.d("Find Location", "in find_location");
-        if (!checkPermission()) {
-            return;
-        }
-        LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        List<String> providers = locationManager.getProviders(true);
-        for (String provider : providers) {
-            Location location = locationManager.getLastKnownLocation(provider);
-            if (location != null) {
-                double latitude = location.getLatitude();
-                double longitude = location.getLongitude();
-                Log.d(TAG, "find_Location: latitude : " + latitude + " longitude : " + longitude);
-                break;
-            } else {
-                Log.d(TAG, "getCurrentGeoPoint: get location value is null");
-            }
-        }
-    }
-
     private void getDataFromServer(String filterValue, int range) {
-        switch (filterValue) {
-            case (FirebaseVar.Business.DOCTOR): {
-                Log.d(TAG, "getDataFromServer: getting Doctor record");
-                getDoctorRecord(range);
-                break;
-            }
-            case (FirebaseVar.Business.ELECTRICIAN): {
-                Log.d(TAG, "getDataFromServer: getting Business Record");
-                getElectricianRecord(range);
-                break;
-            }
-        }
-    }
-
-
-    private synchronized void getDoctorRecord(int range) {
-        Log.d(TAG, "getDoctorRecord: searching..");
-        dialog.setProgressTitle("Getting doctor records");
-        dialog.show();
-        FirebaseDB.Business.getDoctorRecord(range, geoPoint.getLatitude(), geoPoint.getLongitude(),
-                new OnResultCallback<List<DoctorModel>>() {
+        FirebaseDB.Business.getBusinessRecord(this, filterValue, range, geoPoint,
+                new OnResultCallback<List<Map<String, Object>>>() {
                     @Override
-                    public void onSuccess(@NonNull List<DoctorModel> doctorModels) {
-                        dialog.dismiss();
-                        Log.d(TAG, "onSuccess: doctor model " + doctorModels);
-                        if (doctorModels.size() != 0) {
-                            setupRecyclerView(new BusinessRecord(BusinessRecord.DOCTOR_TYPE, doctorModels));
-                            Utils.hideViews(tvMessage);
-                            Utils.showViews(rvDetails);
-                        } else {
-                            Utils.showViews(tvMessage);
-                            Utils.hideViews(rvDetails);
-                        }
+                    public void onSuccess(@NonNull List<Map<String, Object>> maps) {
+                        Log.d(TAG, "onSuccess: map value : " + maps);
+                        setupRecyclerView(maps);
                     }
 
                     @Override
                     public void onFailed(String failedMessage) {
-                        dialog.dismiss();
-                        Utils.showViews(tvMessage);
-                        Utils.hideViews(rvDetails);
-                        Toast.makeText(SearchImportantNumberActivity.this, failedMessage, Toast.LENGTH_SHORT).show();
+                        toastMessage(failedMessage);
+                        setupRecyclerView(new ArrayList<>());
                     }
                 });
     }
-
-    private synchronized void getElectricianRecord(int range) {
-        Log.d(TAG, "getElectricianRecord: called");
-        FirebaseDB.Business.getElectricianRecord(range, geoPoint.getLatitude(), geoPoint.getLongitude(),
-                new OnResultCallback<List<ElectricianModel>>() {
-                    @Override
-                    public void onSuccess(@NonNull List<ElectricianModel> electricianModels) {
-                        Log.d(TAG, "onSuccess: electrician model : " + electricianModels);
-                        if (electricianModels.size() != 0) {
-                            setupRecyclerView(new BusinessRecord(electricianModels, BusinessRecord.ELECTRICIAN_TYPE));
-                            Utils.hideViews(tvMessage);
-                            Utils.showViews(rvDetails);
-                        } else {
-                            Utils.showViews(tvMessage);
-                            Utils.hideViews(rvDetails);
-                        }
-                    }
-
-                    @Override
-                    public void onFailed(String failedMessage) {
-                        Toast.makeText(SearchImportantNumberActivity.this, failedMessage, Toast.LENGTH_SHORT).show();
-                        Utils.showViews(tvMessage);
-                        Utils.hideViews(rvDetails);
-                    }
-                });
-    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -261,13 +182,20 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
 
 
     private final class LocationLoader extends AsyncTask<Void, Void, GeoPoint> {
+        private final boolean isSearch;
+
+        public LocationLoader(boolean isSearch) {
+            this.isSearch = isSearch;
+        }
 
         ProgressDialog progressDialog = new ProgressDialog(SearchImportantNumberActivity.this,
                 cancelListener);
 
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            progressDialog.setProgressTitle("Getting current location..");
             progressDialog.show();
         }
 
@@ -293,7 +221,7 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
                 toastMessage("you can't get current location");
             } else {
                 SearchImportantNumberActivity.this.geoPoint = geoPoint;
-                startActivity();
+                startActivity(isSearch);
             }
         }
     }
@@ -319,14 +247,18 @@ public class SearchImportantNumberActivity extends AppCompatActivity implements 
         return geoPoint;
     }
 
-    private void startActivity() {
-        Intent intent = new Intent(this, FilterActivity.class);
-        ActivityCompat.startActivityForResult(this, intent, FILTER_ACTIVITY_REQUEST_CODE, null);
+    private void startActivity(boolean isSearch) {
+        if (isSearch) {
+            Intent intent = new Intent(this, FilterActivity.class);
+            ActivityCompat.startActivityForResult(this, intent, FILTER_ACTIVITY_REQUEST_CODE, null);
+        } else {
+            Intent intent = new Intent(this, BusinessActivity.class);
+            startActivity(intent);
+        }
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Common.clearValue();
     }
 }

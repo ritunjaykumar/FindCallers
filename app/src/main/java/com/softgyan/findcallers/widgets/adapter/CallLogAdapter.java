@@ -31,20 +31,17 @@ import java.util.Collection;
 import java.util.List;
 
 public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHolder> implements Filterable {
-    private static final String TAG = CallLogAdapter.class.getName();
+    private static final String TAG = "CallLogAdapter";
     private final List<CallModel> callModelList;
     private final List<CallModel> callModelListBackup;
     private final Context mContext;
     private final CallLogCallback logCallback;
-    private final boolean flag;
 
-    public CallLogAdapter(Context context, final List<CallModel> callModelList, final boolean flag,
-                          final CallLogCallback logCallback) {
+    public CallLogAdapter(Context context, final List<CallModel> callModelList, final CallLogCallback logCallback) {
         this.callModelList = callModelList;
         this.callModelListBackup = new ArrayList<>(callModelList);
         this.mContext = context;
         this.logCallback = logCallback;
-        this.flag = flag;
     }
 
     @NonNull
@@ -57,8 +54,11 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final CallModel callModel = callModelList.get(position);
-        holder.tvName.setText(callModel.getCacheName());
-
+        if (callModel.getCacheName() == null || callModel.getCacheName().length() == 0) {
+            holder.tvName.setText(String.format("unknown_%s", callModel.getFirstCall().getNumber()));
+        } else {
+            holder.tvName.setText(callModel.getCacheName());
+        }
         final CallNumberModel callNumber = callModel.getFirstCall();
         if (callNumber == null) return;
 
@@ -92,6 +92,7 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
         }
 
         final int subscriptionId = CallUtils.getSubscriptionId(mContext, callNumber.getIccId());
+//        Log.d(TAG, "onBindViewHolder: subscription id : "+subscriptionId);
 
         switch (subscriptionId) {
             case CommVar.SIM_ONE: {
@@ -179,18 +180,19 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
         PopupMenu popupMenu = new PopupMenu(mContext, itemView);
         popupMenu.inflate(R.menu.call_log_menu);
         popupMenu.setGravity(Gravity.END);
-        if (flag) {
-            popupMenu.getMenu().findItem(R.id.all_history).setVisible(false);
-            popupMenu.getMenu().findItem(R.id.save_number).setVisible(false);
-            popupMenu.getMenu().findItem(R.id.call).setVisible(false);
-            popupMenu.getMenu().findItem(R.id.add_to_block).setVisible(false);
-            popupMenu.getMenu().findItem(R.id.add_to_spam).setVisible(false);
-            popupMenu.getMenu().findItem(R.id.send_sms).setVisible(false);
+
+        Log.d(TAG, "onItemClicked: callModel : " + callModel);
+
+        if (callModel.getCacheName() != null) {
+            Log.d(TAG, "onItemClicked: cachedName : " + callModel.getCacheName());
+            popupMenu.getMenu().findItem(R.id.search_number).setVisible(false);
         }
         popupMenu.setOnMenuItemClickListener(item -> {
             final int id = item.getItemId();
             if (id == R.id.call) {
                 logCallback.onClickMoreOption(callModel, position, CallLogCallback.CALL);
+            } else if (id == R.id.search_number) {
+                logCallback.onClickMoreOption(callModel, position, CallLogCallback.SEARCH_NUMBER);
             } else if (id == R.id.save_number) {
                 logCallback.onClickMoreOption(callModel, position, CallLogCallback.SAVE_NUMBER);
             } else if (id == R.id.add_to_block) {
@@ -239,6 +241,7 @@ public class CallLogAdapter extends RecyclerView.Adapter<CallLogAdapter.ViewHold
         int CALL = 4;
         int DELETE = 5;
         int SEND_SMS = 6;
+        int SEARCH_NUMBER = 7;
 
         void onClickMoreOption(final CallModel callModel, final int position, final int options);
 

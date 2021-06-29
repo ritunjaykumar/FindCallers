@@ -135,6 +135,7 @@ public class AccountActivity extends AppCompatActivity implements View.OnClickLi
                 Intent intent = new Intent();
                 intent.putExtra("extra", 1);
                 setResult(Activity.RESULT_OK, intent);
+                AppPreference.setLogin(AccountActivity.this, false);
                 finish();
             } else {
                 AppPreference.setLogin(AccountActivity.this, true);

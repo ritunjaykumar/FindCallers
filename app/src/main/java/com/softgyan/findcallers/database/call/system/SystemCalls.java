@@ -67,14 +67,17 @@ public final class SystemCalls {
 
             boolean flag = true;
             for (CallModel callModel : callList) {
-                if (userName == null) {
-                    userName = "Unknown_" + phNumber;
-                }
-                if (userName.equals(callModel.getCacheName())) {
+                if(callModel.getCallNumberList().size() != 0 && phNumber.equals(callModel.getFirstCall().getNumber())){
                     callModel.setCallNumber(callNumberTemp);
                     flag = false;
                     break;
                 }
+
+                /*if (userName.equals(callModel.getCacheName())) {
+                    callModel.setCallNumber(callNumberTemp);
+                    flag = false;
+                    break;
+                }*/
 
             }
 

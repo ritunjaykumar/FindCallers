@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,6 +44,10 @@ public class FilterActivity extends AppCompatActivity {
         Button btnSearch = findViewById(R.id.btnSearch);
         btnSearch.setOnClickListener(v -> {
             String filterKey = (String) spinner.getSelectedItem();
+            if(filterKey.equals("Not Selected")){
+                Toast.makeText(this, "select valid option", Toast.LENGTH_SHORT).show();
+                return;
+            }
             String strDistance = (String) sDistance.getSelectedItem();
             final String[] s = strDistance.split(" ");
             try {
@@ -69,8 +74,9 @@ public class FilterActivity extends AppCompatActivity {
     private void returnSearchActivity(@NonNull String filterKey, int distance) {
         Intent intent = new Intent();
         switch (filterKey) {
-            case (FirebaseVar.Business.DOCTOR):
-            case (FirebaseVar.Business.ELECTRICIAN): {
+            case (FirebaseVar.Business.DB_POLICE_STATION):
+            case (FirebaseVar.Business.DB_DOCTOR):
+            case (FirebaseVar.Business.DB_ELECTRICIAN): {
                 intent.putExtra(FILTER_KEY, filterKey);
                 intent.putExtra(DISTANCE_KEY, distance);
                 break;

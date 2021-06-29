@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
@@ -29,11 +30,13 @@ public final class CallerDialog implements View.OnClickListener {
     private static final String TAG = "CallerDialog";
     private CallerInfoModel callerInfo;
 
-    private View view;
+    private static CallerDialog callerDialog;
 
+    private View view = null;
+    private View tempView = null;
     private final Context context;
 
-    public CallerDialog(Context context) {
+    private CallerDialog(Context context) {
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.context = context;
@@ -48,6 +51,7 @@ public final class CallerDialog implements View.OnClickListener {
         } else {
             layoutParams = WindowManager.LayoutParams.TYPE_PHONE;
         }
+
         view = layoutInflater.inflate(R.layout.layout_caller_info, null);
 
         int wmFlag = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |
@@ -61,6 +65,33 @@ public final class CallerDialog implements View.OnClickListener {
                 PixelFormat.TRANSLUCENT
         );
 
+        params.x = 0;
+        params.y = 0;
+        view.setOnTouchListener(new View.OnTouchListener() {
+            private final WindowManager.LayoutParams updatedParams = params;
+            private int y;
+            float touchedY;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case (MotionEvent.ACTION_DOWN): {
+                        y = updatedParams.y;
+
+                        touchedY = event.getRawY();
+
+                        break;
+                    }
+                    case (MotionEvent.ACTION_MOVE): {
+                        v.performClick();
+                        updatedParams.y = (int) (y + (event.getRawY() - touchedY));
+                        windowManager.updateViewLayout(view, updatedParams);
+                    }
+                }
+                return false;
+            }
+        });
+
 
     }
 
@@ -68,9 +99,19 @@ public final class CallerDialog implements View.OnClickListener {
     public void showDialog(final CallerInfoModel callerInfo, boolean isViewUpdate) {
         if (callerInfo == null) return;
         this.callerInfo = callerInfo;
+        if (tempView != null && !isViewUpdate) {
+            closeWindowManager();
+            Log.d(TAG, "setupWindowDialog: close");
+        } else {
+            Log.d(TAG, "setupWindowDialog: view = null");
+        }
+        tempView = view;
+        Log.d(TAG, "showDialog: isViewUpdate : "+isViewUpdate);
+        LinearLayout linearLayout = view.findViewById(R.id.llOptionContainer);
         if (isViewUpdate) {
-            LinearLayout linearLayout = view.findViewById(R.id.llOptionContainer);
             Utils.showViews(linearLayout);
+        }else{
+            Utils.hideViews(linearLayout);
         }
 
         if (callerInfo.getMessage() != null) {
@@ -108,7 +149,12 @@ public final class CallerDialog implements View.OnClickListener {
                 e.printStackTrace();
             }
         } else {
-            windowManager.addView(view, params);
+            try {
+
+                windowManager.addView(view, params);
+            } catch (Exception e) {
+                Log.d(TAG, "showDialog: error : " + e.getMessage());
+            }
         }
         if (isViewUpdate)
             new Handler().postDelayed(this::closeWindowManager, 1000 * 60);
@@ -140,6 +186,14 @@ public final class CallerDialog implements View.OnClickListener {
 
         }
         closeWindowManager();
+    }
+
+
+    public static CallerDialog getInstance(Context context) {
+        if (callerDialog == null) {
+            callerDialog = new CallerDialog(context.getApplicationContext());
+        }
+        return callerDialog;
     }
 
 }

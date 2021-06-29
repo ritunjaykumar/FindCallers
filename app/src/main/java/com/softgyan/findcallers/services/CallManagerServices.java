@@ -79,9 +79,14 @@ public class CallManagerServices extends Service {
     public void onCreate() {
         super.onCreate();
         registerCallReceiver();
-        callerDialog = new CallerDialog(getApplicationContext());
+        try {
+            callerDialog = CallerDialog.getInstance(getApplicationContext());
+        }catch (Exception e){
+            Log.d(TAG, "onCreate: error : "+e.getMessage());
+        }
         Log.d(TAG, "onCreate: service created");
         isCallRecorderEnable = AppPreference.isCallRecordingEnable(this);
+
     }
 
     @Override
@@ -156,7 +161,7 @@ public class CallManagerServices extends Service {
                      * show dialog on call screen+
                      */
 
-                    Log.d(TAG, "run: callValue : " + "CALL_INITIATE");
+                    Log.d(TAG, "run: callValue : CALL_INITIATE");
                     isCallInitiate = true;
                     lastUpdate = callValue;
                     isOutgoing = callIntent.getBooleanExtra(IS_OUT_GOING, false);
@@ -280,6 +285,8 @@ public class CallManagerServices extends Service {
                         showDialogOverCall(callerInfoModels, false);
                     }
                 });
+
+
             } else {
                 callerInfoModels = CallerInfoModel.getInstance(null, mobNum, -1,
                         null, false, false);
@@ -298,33 +305,32 @@ public class CallManagerServices extends Service {
 //        Log.d(TAG, "saveLastCallHistory: searched number : " + mContactModel);
 
         final CallModel callModel = CallQuery.searchCallHistoryByNumber(context, number);
-//        Log.d(TAG, "saveLastCallHistory: searched number from Local : " + callModel);
+        Log.d(TAG, "saveLastCallHistory: searched number from Local : " + callModel);
         if (callModel != null) {
-
+            lastCallHistory.setNameId(callModel.getNameId());
             CallNumberModel lastCallNumberModel = lastCallHistory.getFirstCall();
             lastCallNumberModel.setNameRefId(callModel.getNameId());
+            Log.d(TAG, "saveLastCallHistory: last call number Model before : " + lastCallNumberModel);
             final int i = CallQuery.insertCallNumberLog(getApplicationContext(), lastCallNumberModel);
-            if (i == 0) {
-//                Log.d(TAG, "saveLastCallHistory: number not save : " + lastCallNumberModel);
+            if (i > 0) {
                 lastCallNumberModel.setCallModelId(i);
+                Log.d(TAG, "saveLastCallHistory: number save : " + lastCallNumberModel);
                 Utils.setCallLogToList(lastCallHistory);
             } else {
-//                Log.d(TAG, "saveLastCallHistory: number save : " + lastCallNumberModel);
+                Log.d(TAG, "saveLastCallHistory: number not save : " + lastCallNumberModel);
             }
         } else {
             if (mContactModel != null) {
                 String name = mContactModel.getName();
-                if (lastCallHistory.getCacheName() == null) {
+                if (lastCallHistory.getCacheName() == null || lastCallHistory.getCacheName().isEmpty()) {
                     lastCallHistory.setCacheName(name);
                 }
-            } else {
-                lastCallHistory.setCacheName("unknown_" + number);
             }
             CallQuery.insertCallLog(getApplicationContext(), lastCallHistory);
-//            Log.d(TAG, "saveLastCallHistory: after save operation : " + lastCallHistory);
+            Log.d(TAG, "saveLastCallHistory: after save operation : " + lastCallHistory);
+            Utils.setCallLogToList(lastCallHistory);
 
         }
-        Utils.setCallLogToList(lastCallHistory);
     }
 
     private final BroadcastReceiver bReceiver = new BroadcastReceiver() {
@@ -339,5 +345,6 @@ public class CallManagerServices extends Service {
             }
         }
     };
+
 
 }

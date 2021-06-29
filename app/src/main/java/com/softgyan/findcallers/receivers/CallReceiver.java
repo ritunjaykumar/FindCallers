@@ -19,10 +19,14 @@ public class CallReceiver extends CallStateReceiver {
 
 
     @Override
-    protected void onCallStart(Context context, String mobNumber, Date startCallDate, int simId, boolean isOutGoing) {
+    protected void onCallStart(Context context, final String mobNumber, Date startCallDate, int simId, boolean isOutGoing) {
         final boolean login = AppPreference.isLogin(context);
-        Log.d(TAG, "onCallStart: login : "+login);
         if (!login) {
+            return;
+        }
+
+        final char c = mobNumber.charAt(mobNumber.length() - 1);
+        if (c == '#') {
             return;
         }
 

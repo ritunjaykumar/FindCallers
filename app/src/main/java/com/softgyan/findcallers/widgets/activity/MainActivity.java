@@ -30,6 +30,7 @@ import com.softgyan.findcallers.models.UserInfoModel;
 import com.softgyan.findcallers.preferences.AppPreference;
 import com.softgyan.findcallers.utils.Utils;
 import com.softgyan.findcallers.widgets.adapter.FragmentAdapter;
+import com.softgyan.findcallers.widgets.dialog.AlertDialog;
 import com.softgyan.findcallers.widgets.fragment.CallFragment;
 import com.softgyan.findcallers.widgets.fragment.ContactFragment;
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private int mPosition = 0;
     private TabLayout tabLayout;
+    private NavigationView mNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void initNavigation(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.mainDrawer);
-        NavigationView mNavigationView = findViewById(R.id.main_side_navigation_view);
+        mNavigationView = findViewById(R.id.main_side_navigation_view);
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.start, R.string.close);
         mDrawerLayout.addDrawerListener(toggle);
         toggle.syncState();
@@ -86,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        setUpHeader(mNavigationView);
+        setUpHeader();
 
     }
 
@@ -102,10 +105,17 @@ public class MainActivity extends AppCompatActivity {
             intent = new Intent(this, FindMobileActivity.class);
         } else if (itemId == R.id.navSearchImportantNumber) {
             intent = new Intent(this, SearchImportantNumberActivity.class);
-        }else if(itemId == R.id.navSetting){
+        } else if (itemId == R.id.navSetting) {
             intent = new Intent(this, SettingActivity.class);
         } else if (itemId == R.id.navLogout) {
-            logout();
+            AlertDialog alertDialog = new AlertDialog(this,( alertDialog1, requestCode) -> {
+                logout();
+                alertDialog1.dismiss();
+            });
+            alertDialog.setAlertTitle("Alert!");
+            alertDialog.setMessage("Sure, Do you want do Logout?");
+            alertDialog.show();
+
             return;
         } else {
             return;
@@ -164,6 +174,12 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        setUpHeader();
+    }
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTION_MANAGE_OVERLAY_PERMISSION_REQUEST_CODE) {
@@ -173,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setUpHeader(NavigationView mNavigationView) {
+    private void setUpHeader() {
         View v = mNavigationView.getHeaderView(0);
         ShapeableImageView imageView = v.findViewById(R.id.sivProfile);
         TextView tvName = v.findViewById(R.id.tvName);
@@ -195,7 +211,9 @@ public class MainActivity extends AppCompatActivity {
                 if (userInfoModel.getUserEmail() != null) {
                     tvEmail.setText(userInfoModel.getUserEmail());
                 }
-                Glide.with(MainActivity.this).load(userInfoModel.getUserProfile()).into(imageView);
+                Glide.with(MainActivity.this).load(userInfoModel.getUserProfile())
+                        .placeholder(R.drawable.ic_image)
+                        .into(imageView);
             }
 
             @Override

@@ -6,8 +6,11 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     android:elevation="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:id="@+id/cardView"
     android:orientation="vertical"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/accent"
     app:cardCornerRadius="6dp">
 
 
@@ -40,7 +43,7 @@
             android:layout_height="wrap_content"
             android:padding="4dp"
             android:text="dkfsdkfskfjlskfjsklad"
-            android:textColor="@color/accent"
+            android:textColor="@color/white"
             android:textSize="18sp"
             tools:ignore="HardcodedText" />
 
@@ -50,7 +53,7 @@
             android:layout_height="wrap_content"
             android:padding="4dp"
             android:text="dkfsdkfskfjlskfjsklad"
-            android:textColor="@color/accent"
+            android:textColor="@color/white"
             android:textSize="18sp"
             tools:ignore="HardcodedText" />
 

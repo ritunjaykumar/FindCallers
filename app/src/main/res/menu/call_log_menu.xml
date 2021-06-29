@@ -7,6 +7,10 @@
         android:title="Call"
         tools:ignore="HardcodedText" />
 
+    <item android:id="@+id/search_number"
+        android:title="Search Number"
+        tools:ignore="HardcodedText" />
+
     <item android:id="@+id/save_number"
         android:title="Save Number"
         tools:ignore="HardcodedText" />
